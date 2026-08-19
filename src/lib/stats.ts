@@ -298,6 +298,15 @@ export function makeHeatScale(values: number[]) {
 export const CATEGORY_SLOTS = 7
 export const OTHER_CATEGORY = 'Прочее'
 
+export interface MerchantStat {
+  name: string
+  spend: number
+  refunds: number
+  count: number
+  /** Share of the category this merchant sits in. */
+  share: number
+}
+
 export interface CategoryStat {
   name: string
   /** 1…7 for a named category, 0 for the neutral "Прочее" bucket. */
@@ -306,6 +315,8 @@ export interface CategoryStat {
   refunds: number
   count: number
   share: number
+  /** Where inside the category the money actually went, biggest first. */
+  merchants: MerchantStat[]
 }
 
 export function buildCategoryOrder(txns: Txn[]): Map<string, number> {
@@ -329,6 +340,7 @@ export function buildMonthCategories(
   order: Map<string, number>,
 ): CategoryStat[] {
   const acc = new Map<string, CategoryStat>()
+  const merchants = new Map<string, Map<string, MerchantStat>>()
 
   for (const day of month.days) {
     for (const t of day.txns) {
@@ -340,21 +352,39 @@ export function buildMonthCategories(
 
       let stat = acc.get(name)
       if (!stat) {
-        stat = { name, slot, spend: 0, refunds: 0, count: 0, share: 0 }
+        stat = { name, slot, spend: 0, refunds: 0, count: 0, share: 0, merchants: [] }
         acc.set(name, stat)
+        merchants.set(name, new Map())
       }
+
+      const byMerchant = merchants.get(name)!
+      const merchantName = t.merchant || '—'
+      let merchant = byMerchant.get(merchantName)
+      if (!merchant) {
+        merchant = { name: merchantName, spend: 0, refunds: 0, count: 0, share: 0 }
+        byMerchant.set(merchantName, merchant)
+      }
+
       // Only purchases are counted here: the refund is reported on its own
       // row, so counting it in its category too would double it.
       if (t.usd >= 0) {
         stat.spend += t.usd
         stat.count += 1
+        merchant.spend += t.usd
+        merchant.count += 1
       } else {
         stat.refunds += -t.usd
+        merchant.refunds += -t.usd
       }
     }
   }
 
   const stats = [...acc.values()]
-  for (const stat of stats) stat.share = month.spend > 0 ? stat.spend / month.spend : 0
+  for (const stat of stats) {
+    stat.share = month.spend > 0 ? stat.spend / month.spend : 0
+    stat.merchants = [...(merchants.get(stat.name)?.values() ?? [])]
+      .map((m) => ({ ...m, share: stat.spend > 0 ? m.spend / stat.spend : 0 }))
+      .sort((a, b) => b.spend - a.spend)
+  }
   return stats.sort((a, b) => b.spend - a.spend)
 }
