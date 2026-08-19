@@ -1,5 +1,7 @@
 import type { CategoryStat, MerchantStat } from '@/lib/types'
-import { OTHER_CATEGORY } from '@/lib/stats'
+
+/** Label for the folded tail of small categories. */
+const OTHER_CATEGORY = 'Прочее'
 
 export const foldTail = (
   categories: CategoryStat[],

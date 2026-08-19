@@ -99,6 +99,31 @@ npm run dev
   до 12 строк, дальше остаток сворачивается в «Прочее (N)».
 - **Транзакции** — поиск, фильтр по месяцу, выгрузка в CSV.
 
+## Структура
+
+Каждая тема — папка со своим `index.ts`; общего входа вроде `src/lib/index.ts` намеренно нет,
+импортируется конкретная папка. Один файл — одна функция, тип или компонент.
+
+```
+src/
+  requests/   shared/ + папка на каждый запрос (queryAssetRecords/)
+  queries/    client/ + папка на каждый квери (useAssetRecordsQuery/)
+  lib/        credentials/ format/ side/ stats/ types/ utils/
+  components/ папка на компонент, утилиты рядом в utils/; ui/ — shadcn
+```
+
+Утилита живёт там, где используется: если она нужна одному месту — она лежит в его папке, а не
+в общем `lib`. Поэтому `maskKey` находится у [`Dashboard`](src/components/Dashboard/utils),
+`formatTime` у [`DayDetails`](src/components/DayDetails/utils), `makeHeatScale` у
+[`CalendarHeatmap`](src/components/CalendarHeatmap/utils), `sleep` у
+[`useAssetRecordsQuery`](src/queries/useAssetRecordsQuery/utils), а справочник MCC — внутри
+[`lib/stats`](src/lib/stats/mcc), у своего единственного потребителя. В `index.ts` каждой папки
+выведено только то, чем пользуются снаружи.
+
+Исключение — предметная логика: `normalize`, `buildDays`, `buildMonths` и остальные `build*`
+вызываются из одного места каждая, но остаются в [`lib/stats`](src/lib/stats). Это не утилиты
+компонентов, а расчёты, которые должны жить отдельно от отображения.
+
 ## Параметры запроса
 
 Тело запроса по умолчанию — то же, что в веб-кабинете:

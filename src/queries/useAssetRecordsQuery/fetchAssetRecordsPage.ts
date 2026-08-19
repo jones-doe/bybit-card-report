@@ -1,4 +1,4 @@
-import { sleep } from '@/lib/sleep'
+import { sleep } from './utils'
 import { PAGE_LIMIT, queryAssetRecords } from '@/requests/queryAssetRecords'
 import type { CardAssetRecordsResult } from '@/requests/queryAssetRecords'
 import type { Credentials } from '@/requests/shared'

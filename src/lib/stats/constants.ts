@@ -7,7 +7,5 @@
  */
 export const CATEGORY_SLOTS = 7
 
-export const OTHER_CATEGORY = 'Прочее'
-
 /** Label for records the API left without a category. */
 export const NO_CATEGORY = 'Без категории'

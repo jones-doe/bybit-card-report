@@ -3,12 +3,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { MONTH_NAMES, formatDateKey, formatUsd, pluralTxn } from '@/lib/format'
-import { makeHeatScale } from '@/lib/stats'
+import { makeHeatScale, WEEKDAYS } from './utils'
 import type { DayStat } from '@/lib/types'
 import type { HoverState } from './HoverState'
 import { Legend } from './Legend'
 import { MonthCells } from './MonthCells'
-import { WEEKDAYS } from './utils'
 
 type CalendarHeatmapProps = {
   days: Map<string, DayStat>
