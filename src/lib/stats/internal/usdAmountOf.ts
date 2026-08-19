@@ -2,7 +2,7 @@ import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 import { toNumber } from './toNumber'
 
 /** Picks the USD figure out of the several amount/currency pairs on a record. */
-export function usdAmountOf(r: CardAssetRecord): number | null {
+export const usdAmountOf = (r: CardAssetRecord): number | null => {
   const pairs: Array<[unknown, unknown]> = [
     [r.basicAmount, r.basicCurrency],
     [r.billAmount, r.basicCurrency],

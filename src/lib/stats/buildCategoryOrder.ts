@@ -1,7 +1,7 @@
 import type { Txn } from '@/lib/types'
 import { CATEGORY_SLOTS, NO_CATEGORY } from './constants'
 
-export function buildCategoryOrder(txns: Txn[]): Map<string, number> {
+export const buildCategoryOrder = (txns: Txn[]): Map<string, number> => {
   const totals = new Map<string, number>()
   for (const t of txns) {
     if (t.usd === null || t.usd < 0) continue

@@ -25,19 +25,19 @@ import type { Txn } from '@/lib/types'
 
 const PAGE_SIZE = 100
 
-interface TransactionsTableProps {
+type TransactionsTableProps = {
   txns: Txn[]
   months: string[]
   monthFilter: string
   onMonthFilterChange: (monthKey: string) => void
 }
 
-export function TransactionsTable({
+export const TransactionsTable = ({
   txns,
   months,
   monthFilter,
   onMonthFilterChange,
-}: TransactionsTableProps) {
+}: TransactionsTableProps) => {
   const [query, setQuery] = useState('')
   const [visible, setVisible] = useState(PAGE_SIZE)
 
@@ -184,7 +184,7 @@ export function TransactionsTable({
   )
 }
 
-function downloadCsv(txns: Txn[]) {
+const downloadCsv = (txns: Txn[]) => {
   const header = [
     'datetime',
     'date',

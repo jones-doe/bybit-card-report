@@ -9,7 +9,7 @@ const REFUND_RE = /refund|reversal|repay|cashback|credit|return/i
  * heuristic stays only for codes outside the documented set, where a negative
  * amount or a wordy status is all we have to go on.
  */
-export function directionOf(r: CardAssetRecord, rawUsd: number | null): TxnDirection {
+export const directionOf = (r: CardAssetRecord, rawUsd: number | null): TxnDirection => {
   const documented = sideDirection(r.side)
   if (documented) return documented
 

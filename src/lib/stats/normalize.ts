@@ -9,7 +9,7 @@ import { toMillis } from './internal/toMillis'
 import { toNumber } from './internal/toNumber'
 import { usdAmountOf } from './internal/usdAmountOf'
 
-export function normalize(records: CardAssetRecord[]): Txn[] {
+export const normalize = (records: CardAssetRecord[]): Txn[] => {
   const txns: Txn[] = []
 
   for (const [index, r] of records.entries()) {

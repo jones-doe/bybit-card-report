@@ -10,11 +10,11 @@ import type { Credentials } from '@/requests/shared'
 const PAGE_DELAY_MS = 350
 
 /** One page of history, with the defaults this app always asks for. */
-export async function fetchAssetRecordsPage(
+export const fetchAssetRecordsPage = async (
   credentials: Credentials,
   page: number,
   signal?: AbortSignal,
-): Promise<CardAssetRecordsResult> {
+): Promise<CardAssetRecordsResult> => {
   if (page > 1) await sleep(PAGE_DELAY_MS, signal)
 
   return queryAssetRecords(

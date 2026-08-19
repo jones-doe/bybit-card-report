@@ -7,16 +7,16 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { Credentials } from '@/requests/shared'
 
-interface AuthScreenProps {
+type AuthScreenProps = {
   onSubmit: (credentials: Credentials) => void
 }
 
-export function AuthScreen({ onSubmit }: AuthScreenProps) {
+export const AuthScreen = ({ onSubmit }: AuthScreenProps) => {
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  function handleSubmit(event: FormEvent) {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
     const key = apiKey.trim()
     const secret = apiSecret.trim()

@@ -1,4 +1,4 @@
-export interface Totals {
+export type Totals = {
   spend: number
   refunds: number
   net: number

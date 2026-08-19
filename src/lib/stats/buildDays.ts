@@ -1,6 +1,6 @@
 import type { DayStat, Txn } from '@/lib/types'
 
-export function buildDays(txns: Txn[]): Map<string, DayStat> {
+export const buildDays = (txns: Txn[]): Map<string, DayStat> => {
   const days = new Map<string, DayStat>()
   for (const t of txns) {
     let day = days.get(t.dateKey)

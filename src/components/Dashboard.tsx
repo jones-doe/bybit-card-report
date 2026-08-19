@@ -17,12 +17,12 @@ import { buildCategoryOrder, buildDays, buildMonths, buildTotals, normalize } fr
 import { assetRecordsQueryKey, useAssetRecordsQuery } from '@/queries/useAssetRecordsQuery'
 import type { Credentials } from '@/requests/shared'
 
-interface DashboardProps {
+type DashboardProps = {
   credentials: Credentials
   onLogout: () => void
 }
 
-export function Dashboard({ credentials, onLogout }: DashboardProps) {
+export const Dashboard = ({ credentials, onLogout }: DashboardProps) => {
   const queryClient = useQueryClient()
   const { records, total, pagesFetched, isLoading, isFetching, failureCount, error, fetchedAt, refetch } =
     useAssetRecordsQuery(credentials)

@@ -2,7 +2,7 @@
  * Request body of query-asset-records, spelled exactly as it goes on the wire —
  * note `status_code` is snake_case while the rest is camelCase.
  */
-export interface QueryAssetRecordsParams {
+export type QueryAssetRecordsParams = {
   page: number
   /** Server maximum is 100. */
   limit: number

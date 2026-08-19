@@ -1,4 +1,4 @@
-export interface MerchantStat {
+export type MerchantStat = {
   name: string
   spend: number
   refunds: number

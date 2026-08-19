@@ -1,6 +1,6 @@
 import type { DayStat, Totals, Txn } from '@/lib/types'
 
-export function buildTotals(txns: Txn[], days: Map<string, DayStat>): Totals {
+export const buildTotals = (txns: Txn[], days: Map<string, DayStat>): Totals => {
   let spend = 0
   let refunds = 0
   let fees = 0

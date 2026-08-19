@@ -1,5 +1,5 @@
 /** Abortable delay: rejects with AbortError instead of resolving late. */
-export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+export const sleep = (ms: number, signal?: AbortSignal): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
       reject(new DOMException('Aborted', 'AbortError'))
@@ -9,7 +9,7 @@ export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
       signal?.removeEventListener('abort', onAbort)
       resolve()
     }, ms)
-    function onAbort() {
+    const onAbort = () => {
       clearTimeout(timer)
       reject(new DOMException('Aborted', 'AbortError'))
     }

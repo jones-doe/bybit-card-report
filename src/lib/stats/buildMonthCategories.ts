@@ -1,10 +1,10 @@
 import type { CategoryStat, MerchantStat, MonthStat } from '@/lib/types'
 import { NO_CATEGORY } from './constants'
 
-export function buildMonthCategories(
+export const buildMonthCategories = (
   month: MonthStat,
   order: Map<string, number>,
-): CategoryStat[] {
+): CategoryStat[] => {
   const acc = new Map<string, CategoryStat>()
   const merchants = new Map<string, Map<string, MerchantStat>>()
 

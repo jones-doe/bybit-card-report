@@ -1,6 +1,6 @@
 import { toNumber } from './toNumber'
 
-export function toMillis(value: unknown): number | null {
+export const toMillis = (value: unknown): number | null => {
   const n = toNumber(value)
   if (n === null || n <= 0) return null
   // txnCreate arrives in seconds on some records and milliseconds on others.

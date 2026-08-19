@@ -13,7 +13,7 @@ import { fetchAssetRecordsPage } from './fetchAssetRecordsPage'
  * Retries, backoff, caching and its persistence all belong to react-query — see
  * the client defaults in `queryClient.ts`.
  */
-export function useAssetRecordsQuery(credentials: Credentials | null): AssetRecordsQuery {
+export const useAssetRecordsQuery = (credentials: Credentials | null): AssetRecordsQuery => {
   const query = useInfiniteQuery({
     queryKey: assetRecordsQueryKey(credentials?.apiKey),
     enabled: credentials !== null,

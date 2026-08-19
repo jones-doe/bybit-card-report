@@ -1,6 +1,6 @@
 import { MONTH_NAMES } from './monthNames'
 
-export function formatMonthKey(monthKey: string) {
+export const formatMonthKey = (monthKey: string) => {
   const [year, month] = monthKey.split('-')
   return `${MONTH_NAMES[Number(month) - 1]} ${year}`
 }

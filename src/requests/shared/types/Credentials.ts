@@ -1,5 +1,5 @@
 /** API key pair used to sign a private request. */
-export interface Credentials {
+export type Credentials = {
   apiKey: string
   apiSecret: string
 }

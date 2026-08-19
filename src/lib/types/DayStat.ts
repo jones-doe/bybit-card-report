@@ -1,6 +1,6 @@
 import type { Txn } from './Txn'
 
-export interface DayStat {
+export type DayStat = {
   dateKey: string
   spend: number
   refunds: number

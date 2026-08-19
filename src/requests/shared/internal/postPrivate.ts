@@ -10,12 +10,12 @@ import { sign } from './sign'
  * Signs and sends one authenticated POST, then unwraps the envelope. Every
  * failure — HTTP or a non-zero retCode — surfaces as BybitApiError.
  */
-export async function postPrivate<T>(
+export const postPrivate = async <T>(
   path: string,
   credentials: Credentials,
   body: Record<string, unknown>,
   signal?: AbortSignal,
-): Promise<T> {
+): Promise<T> => {
   const rawBody = JSON.stringify(body)
   const timestamp = Date.now().toString()
   const signature = await sign(

@@ -8,7 +8,7 @@ import type { DayStat } from '@/lib/types'
 
 const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
 
-interface CalendarHeatmapProps {
+type CalendarHeatmapProps = {
   days: Map<string, DayStat>
   years: number[]
   year: number
@@ -17,7 +17,7 @@ interface CalendarHeatmapProps {
   onSelectDay: (dateKey: string | null) => void
 }
 
-interface HoverState {
+type HoverState = {
   x: number
   y: number
   dateKey: string
@@ -28,14 +28,14 @@ interface HoverState {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-export function CalendarHeatmap({
+export const CalendarHeatmap = ({
   days,
   years,
   year,
   onYearChange,
   selectedDay,
   onSelectDay,
-}: CalendarHeatmapProps) {
+}: CalendarHeatmapProps) => {
   const [hover, setHover] = useState<HoverState | null>(null)
 
   // The scale is built across the whole history, so colours mean the same thing
@@ -144,7 +144,7 @@ export function CalendarHeatmap({
   )
 }
 
-interface MonthCellsProps {
+type MonthCellsProps = {
   year: number
   monthIndex: number
   days: Map<string, DayStat>
@@ -154,7 +154,7 @@ interface MonthCellsProps {
   onHover: (state: HoverState | null) => void
 }
 
-function MonthCells({
+const MonthCells = ({
   year,
   monthIndex,
   days,
@@ -162,7 +162,7 @@ function MonthCells({
   selectedDay,
   onSelectDay,
   onHover,
-}: MonthCellsProps) {
+}: MonthCellsProps) => {
   const first = new Date(year, monthIndex, 1)
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
   const offset = (first.getDay() + 6) % 7 // week starts on Monday
@@ -234,7 +234,7 @@ function MonthCells({
   return <>{cells}</>
 }
 
-function Legend({ thresholds }: { thresholds: number[] }) {
+const Legend = ({ thresholds }: { thresholds: number[] }) => {
   return (
     <div className="text-muted-foreground flex items-center gap-2 text-xs">
       <span>меньше</span>
@@ -261,7 +261,7 @@ function Legend({ thresholds }: { thresholds: number[] }) {
   )
 }
 
-export function pluralTxn(count: number) {
+export const pluralTxn = (count: number) => {
   const mod10 = count % 10
   const mod100 = count % 100
   if (mod10 === 1 && mod100 !== 11) return 'операция'

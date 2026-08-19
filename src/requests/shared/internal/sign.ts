@@ -1,7 +1,7 @@
 const encoder = new TextEncoder()
 
 /** Bybit v5 signature: HMAC-SHA256(timestamp + apiKey + recvWindow + rawBody). */
-export async function sign(secret: string, payload: string): Promise<string> {
+export const sign = async (secret: string, payload: string): Promise<string> => {
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),

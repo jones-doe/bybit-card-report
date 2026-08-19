@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { formatDateTime, formatUsd } from '@/lib/format'
 import type { Totals } from '@/lib/types'
 
-export function StatTiles({ totals }: { totals: Totals }) {
+export const StatTiles = ({ totals }: { totals: Totals }) => {
   const tiles: Array<{ label: string; value: string; hint?: string }> = [
     {
       // Net, so this headline and the per-month figures add up.

@@ -1,7 +1,7 @@
 import type { Credentials } from '@/requests/shared'
 import { CREDENTIALS_STORAGE_KEY } from './storageKey'
 
-export function loadCredentials(): Credentials | null {
+export const loadCredentials = (): Credentials | null => {
   try {
     const raw = localStorage.getItem(CREDENTIALS_STORAGE_KEY)
     if (!raw) return null

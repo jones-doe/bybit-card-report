@@ -6,7 +6,7 @@
  *
  * https://bybit-exchange.github.io/docs/v5/bybit-card/asset-records
  */
-export interface CardAssetRecord {
+export type CardAssetRecord = {
   pan4?: string
   pan6?: string
   /** `0` In_Progress, `1` Completed, `2` Declined, `3` Reversal. */

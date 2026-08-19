@@ -1,4 +1,4 @@
-export function formatDateTime(ts: number) {
+export const formatDateTime = (ts: number) => {
   return new Date(ts).toLocaleString('ru-RU', {
     day: '2-digit',
     month: '2-digit',

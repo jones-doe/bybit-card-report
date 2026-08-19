@@ -1,6 +1,6 @@
 import type { DayStat } from './DayStat'
 
-export interface MonthStat {
+export type MonthStat = {
   monthKey: string
   spend: number
   refunds: number

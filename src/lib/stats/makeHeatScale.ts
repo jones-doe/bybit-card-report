@@ -2,7 +2,7 @@
  * Quantile-bucketed scale for the calendar: five steps over the days that had
  * any spend, so a handful of huge days can't flatten everything else to step 1.
  */
-export function makeHeatScale(values: number[]) {
+export const makeHeatScale = (values: number[]) => {
   const sorted = values.filter((v) => v > 0).sort((a, b) => a - b)
   if (sorted.length === 0) return { level: () => 0, thresholds: [] as number[] }
 

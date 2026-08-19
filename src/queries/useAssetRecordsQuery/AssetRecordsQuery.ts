@@ -1,6 +1,6 @@
 import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 
-export interface AssetRecordsQuery {
+export type AssetRecordsQuery = {
   /** Every page flattened. Complete only once `isComplete` is true. */
   records: CardAssetRecord[]
   /** totalCount as reported by the last page, when it reported one. */

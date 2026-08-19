@@ -7,7 +7,7 @@ import { buildMonthCategories, OTHER_CATEGORY } from '@/lib/stats'
 import type { CategoryStat, MerchantStat, MonthStat } from '@/lib/types'
 import { pluralTxn } from './CalendarHeatmap'
 
-interface MonthsBreakdownProps {
+type MonthsBreakdownProps = {
   months: MonthStat[]
   categoryOrder: Map<string, number>
   onOpenTransactions: (monthKey: string) => void
@@ -18,10 +18,10 @@ const percent = (share: number) => `${share >= 0.01 ? Math.round(share * 100) : 
 /** How many categories the per-month table names before folding the tail. */
 const TABLE_LIMIT = 12
 
-function foldTail(
+const foldTail = (
   categories: CategoryStat[],
   keep: (c: CategoryStat, index: number) => boolean,
-): CategoryStat[] {
+): CategoryStat[] => {
   const kept = categories.filter((c, i) => keep(c, i) && c.spend > 0)
   const tail = categories.filter((c, i) => !keep(c, i))
   if (tail.length === 0) return kept
@@ -58,11 +58,11 @@ function foldTail(
   return folded.spend > 0 ? [...kept, folded].sort((a, b) => b.spend - a.spend) : kept
 }
 
-export function MonthsBreakdown({
+export const MonthsBreakdown = ({
   months,
   categoryOrder,
   onOpenTransactions,
-}: MonthsBreakdownProps) {
+}: MonthsBreakdownProps) => {
   // The newest month starts open — the "where is the money going" answer should
   // be on screen without a click.
   const [expanded, setExpanded] = useState<string | null>(months[0]?.monthKey ?? null)
@@ -176,13 +176,13 @@ export function MonthsBreakdown({
   )
 }
 
-interface MonthPanelProps {
+type MonthPanelProps = {
   month: MonthStat
   categories: CategoryStat[]
   onOpenTransactions: () => void
 }
 
-function MonthPanel({ month, categories, onOpenTransactions }: MonthPanelProps) {
+const MonthPanel = ({ month, categories, onOpenTransactions }: MonthPanelProps) => {
   const rows = foldTail(categories, (_, index) => index < TABLE_LIMIT)
   const max = Math.max(...rows.map((c) => c.spend), 1)
   const [open, setOpen] = useState<Set<string>>(new Set())
@@ -311,7 +311,7 @@ function MonthPanel({ month, categories, onOpenTransactions }: MonthPanelProps) 
 /** How many merchants a category names before folding the rest. */
 const MERCHANT_LIMIT = 8
 
-function MerchantList({ category }: { category: CategoryStat }) {
+const MerchantList = ({ category }: { category: CategoryStat }) => {
   const shown = category.merchants.slice(0, MERCHANT_LIMIT)
   const rest = category.merchants.slice(MERCHANT_LIMIT)
   const restSpend = rest.reduce((sum, m) => sum + m.spend, 0)
@@ -368,7 +368,7 @@ function MerchantList({ category }: { category: CategoryStat }) {
   )
 }
 
-function Metric({
+const Metric = ({
   label,
   value,
   hint,
@@ -378,7 +378,7 @@ function Metric({
   value: string
   hint?: string
   tone?: 'refund'
-}) {
+}) => {
   return (
     <div>
       <div className="text-muted-foreground text-xs">{label}</div>

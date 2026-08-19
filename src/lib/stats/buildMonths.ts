@@ -1,7 +1,7 @@
 import type { DayStat, MonthStat } from '@/lib/types'
 import { monthKeyOf } from './monthKeyOf'
 
-export function buildMonths(days: Map<string, DayStat>): MonthStat[] {
+export const buildMonths = (days: Map<string, DayStat>): MonthStat[] => {
   const months = new Map<string, MonthStat>()
 
   for (const day of days.values()) {

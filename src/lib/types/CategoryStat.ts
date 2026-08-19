@@ -1,6 +1,6 @@
 import type { MerchantStat } from './MerchantStat'
 
-export interface CategoryStat {
+export type CategoryStat = {
   name: string
   /** 1…7 for a named category, 0 for the neutral "Прочее" bucket. */
   slot: number

@@ -7,12 +7,12 @@ import { isPlainPurchase } from '@/lib/side'
 import type { DayStat } from '@/lib/types'
 import { pluralTxn } from './CalendarHeatmap'
 
-interface DayDetailsProps {
+type DayDetailsProps = {
   day: DayStat
   onClose: () => void
 }
 
-export function DayDetails({ day, onClose }: DayDetailsProps) {
+export const DayDetails = ({ day, onClose }: DayDetailsProps) => {
   return (
     <Card>
       <CardHeader>

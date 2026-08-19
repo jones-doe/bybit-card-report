@@ -1,5 +1,5 @@
 /** Wrapper every v5 endpoint answers with. */
-export interface BybitEnvelope<T> {
+export type BybitEnvelope<T> = {
   retCode: number
   retMsg: string
   result: T
