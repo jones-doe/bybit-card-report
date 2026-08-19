@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { formatDateTime, formatUsd } from '@/lib/format'
-import type { Totals } from '@/lib/stats'
+import type { Totals } from '@/lib/types'
 
 export function StatTiles({ totals }: { totals: Totals }) {
   const tiles: Array<{ label: string; value: string; hint?: string }> = [

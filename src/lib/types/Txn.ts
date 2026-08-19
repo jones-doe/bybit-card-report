@@ -1,6 +1,5 @@
-// Display models. Everything the server sends lives in src/requests/types.
 import type { CardAssetRecord } from '@/requests'
-import type { TxnDirection } from './side'
+import type { TxnDirection } from '@/lib/side'
 
 /** A record normalised for statistics. All money is USD. */
 export interface Txn {
@@ -34,28 +33,4 @@ export interface Txn {
   fees: number
   isRefund: boolean
   raw: CardAssetRecord
-}
-
-export interface DayStat {
-  dateKey: string
-  spend: number
-  refunds: number
-  net: number
-  count: number
-  /** Purchases only — refunds and holds must not dilute an average cheque. */
-  spendCount: number
-  txns: Txn[]
-}
-
-export interface MonthStat {
-  monthKey: string
-  spend: number
-  refunds: number
-  net: number
-  count: number
-  spendCount: number
-  activeDays: number
-  avgCheck: number
-  maxDay: DayStat | null
-  days: DayStat[]
 }

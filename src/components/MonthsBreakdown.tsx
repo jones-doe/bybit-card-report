@@ -3,13 +3,8 @@ import { ChevronDown, ListFilter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDateKey, formatMonthKey, formatUsd } from '@/lib/format'
-import {
-  buildMonthCategories,
-  OTHER_CATEGORY,
-  type CategoryStat,
-  type MerchantStat,
-} from '@/lib/stats'
-import type { MonthStat } from '@/lib/types'
+import { buildMonthCategories, OTHER_CATEGORY } from '@/lib/stats'
+import type { CategoryStat, MerchantStat, MonthStat } from '@/lib/types'
 import { pluralTxn } from './CalendarHeatmap'
 
 interface MonthsBreakdownProps {
