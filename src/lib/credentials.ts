@@ -1,9 +1,6 @@
-const KEY = 'bybit-card-report:credentials'
+import type { Credentials } from '@/requests'
 
-export interface Credentials {
-  apiKey: string
-  apiSecret: string
-}
+const KEY = 'bybit-card-report:credentials'
 
 export function loadCredentials(): Credentials | null {
   try {

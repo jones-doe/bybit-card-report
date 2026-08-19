@@ -1,55 +1,6 @@
-/** Raw record as returned by POST /v5/card/transaction/query-asset-records. */
+// Display models. Everything the server sends lives in src/requests/types.
+import type { CardAssetRecord } from '@/requests'
 import type { TxnDirection } from './side'
-
-export interface CardAssetRecord {
-  pan4?: string
-  pan6?: string
-  tradeStatus?: string
-  side?: string
-  basicAmount?: string
-  basicCurrency?: string
-  transactionAmount?: string
-  transactionCurrency?: string
-  transactionCurrencyAmount?: string
-  txnCreate?: number | string
-  merchCountry?: string
-  merchCity?: string
-  merchName?: string
-  txnId?: string
-  declinedReason?: string
-  totalFees?: string
-  uid?: number | string
-  fxPad?: string
-  interchangeFee?: string
-  billAmount?: string
-  paidAmount?: string
-  paidCurrency?: string
-  bonusAmount?: string
-  foreignTransactionFee?: string
-  totalTax?: string
-  paidFiat?: string
-  withdrawalFee?: string
-  status?: string
-  orderNo?: string
-  mccCode?: string
-  merchCategoryDesc?: string
-  [key: string]: unknown
-}
-
-export interface CardAssetRecordsResult {
-  pageSize: number | string
-  pageNo: number | string
-  totalCount: number | string
-  data: CardAssetRecord[]
-}
-
-export interface BybitEnvelope<T> {
-  retCode: number
-  retMsg: string
-  result: T
-  retExtInfo?: unknown
-  time?: number
-}
 
 /** A record normalised for statistics. All money is USD. */
 export interface Txn {

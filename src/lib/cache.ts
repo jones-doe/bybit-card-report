@@ -1,4 +1,4 @@
-import type { CardAssetRecord } from './types'
+import type { CardAssetRecord } from '@/requests'
 
 const KEY = 'bybit-card-report:records'
 

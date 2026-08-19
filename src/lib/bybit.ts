@@ -1,25 +1,14 @@
-import type { BybitEnvelope, CardAssetRecord, CardAssetRecordsResult } from './types'
-import type { Credentials } from './credentials'
+import {
+  isRateLimited,
+  PAGE_LIMIT,
+  queryAssetRecords,
+  type CardAssetRecord,
+  type CardAssetRecordsResult,
+  type Credentials,
+} from '@/requests'
+import { sleep } from './sleep'
 
-/**
- * Bybit serves CORS headers on this endpoint and allows the X-BAPI-* request
- * headers, so the browser calls it directly — dev and the static build run the
- * exact same path. Set VITE_BYBIT_BASE=/bybit to route through the dev-server
- * proxy instead, should that ever stop being true.
- *
- * One consequence of going cross-origin: only `token` and `X-Signature` are in
- * Access-Control-Expose-Headers, so X-Bapi-Limit-Reset-Timestamp is invisible
- * to the page and the rate-limit backoff falls back to pure exponential.
- */
-const API_BASE = import.meta.env.VITE_BYBIT_BASE ?? 'https://api.bybit.com'
-const ENDPOINT = `${API_BASE}/v5/card/transaction/query-asset-records`
-const RECV_WINDOW = '20000'
-/** The endpoint caps a page at 100 records. */
-export const PAGE_LIMIT = 100
 const MAX_PAGES = 500
-
-/** retCode Bybit uses for "Too many visits. Exceeded the API Rate Limit." */
-const RATE_LIMIT_RETCODE = 10006
 
 /** Pacing between pages. Grows after every rate-limit hit and never shrinks. */
 const BASE_PAGE_DELAY_MS = 350
@@ -30,118 +19,6 @@ const PAGE_DELAY_GROWTH = 1.8
 const MAX_RETRIES = 7
 const BASE_BACKOFF_MS = 1_500
 const MAX_BACKOFF_MS = 60_000
-
-export class BybitApiError extends Error {
-  readonly retCode: number
-  readonly retMsg: string
-  /** From X-Bapi-Limit-Reset-Timestamp, when the response carried it. */
-  readonly resetAt: number | null
-
-  constructor(message: string, retCode: number, retMsg: string, resetAt: number | null = null) {
-    super(message)
-    this.name = 'BybitApiError'
-    this.retCode = retCode
-    this.retMsg = retMsg
-    this.resetAt = resetAt
-  }
-}
-
-function isRateLimited(error: unknown): error is BybitApiError {
-  if (!(error instanceof BybitApiError)) return false
-  // 10006 is the documented retCode; a bare HTTP 403 is the IP-level limit.
-  return error.retCode === RATE_LIMIT_RETCODE || error.retCode === 403
-}
-
-const encoder = new TextEncoder()
-
-/** Bybit v5 signature: HMAC-SHA256(timestamp + apiKey + recvWindow + rawBody). */
-async function sign(secret: string, payload: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  )
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(payload))
-  return Array.from(new Uint8Array(signature))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
-
-function sleep(ms: number, signal?: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new DOMException('Aborted', 'AbortError'))
-      return
-    }
-    const timer = setTimeout(() => {
-      signal?.removeEventListener('abort', onAbort)
-      resolve()
-    }, ms)
-    function onAbort() {
-      clearTimeout(timer)
-      reject(new DOMException('Aborted', 'AbortError'))
-    }
-    signal?.addEventListener('abort', onAbort, { once: true })
-  })
-}
-
-function resetTimestampOf(response: Response): number | null {
-  const raw = response.headers.get('x-bapi-limit-reset-timestamp')
-  if (!raw) return null
-  const parsed = Number(raw)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
-}
-
-async function postPrivate<T>(
-  credentials: Credentials,
-  body: Record<string, unknown>,
-  signal?: AbortSignal,
-): Promise<T> {
-  const rawBody = JSON.stringify(body)
-  const timestamp = Date.now().toString()
-  const signature = await sign(
-    credentials.apiSecret,
-    timestamp + credentials.apiKey + RECV_WINDOW + rawBody,
-  )
-
-  const response = await fetch(ENDPOINT, {
-    method: 'POST',
-    signal,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-BAPI-API-KEY': credentials.apiKey,
-      'X-BAPI-TIMESTAMP': timestamp,
-      'X-BAPI-RECV-WINDOW': RECV_WINDOW,
-      'X-BAPI-SIGN': signature,
-    },
-    body: rawBody,
-  })
-
-  const resetAt = resetTimestampOf(response)
-
-  if (!response.ok) {
-    const text = await response.text().catch(() => '')
-    throw new BybitApiError(
-      `HTTP ${response.status} ${response.statusText}${text ? ` — ${text.slice(0, 300)}` : ''}`,
-      response.status,
-      response.statusText,
-      resetAt,
-    )
-  }
-
-  const envelope = (await response.json()) as BybitEnvelope<T>
-  if (envelope.retCode !== 0) {
-    throw new BybitApiError(
-      `Bybit вернул ошибку ${envelope.retCode}: ${envelope.retMsg}`,
-      envelope.retCode,
-      envelope.retMsg,
-      resetAt,
-    )
-  }
-  return envelope.result
-}
 
 export interface FetchProgress {
   page: number
@@ -183,7 +60,7 @@ export async function fetchAllAssetRecords({
 
     for (let attempt = 0; ; attempt++) {
       try {
-        result = await postPrivate<CardAssetRecordsResult>(
+        result = await queryAssetRecords(
           credentials,
           {
             page,

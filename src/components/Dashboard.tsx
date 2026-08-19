@@ -12,10 +12,10 @@ import { StatTiles } from './StatTiles'
 import { TransactionsTable } from './TransactionsTable'
 import { fetchAllAssetRecords, type FetchProgress } from '@/lib/bybit'
 import { clearCachedRecords, loadCachedRecords, saveCachedRecords } from '@/lib/cache'
-import { maskKey, type Credentials } from '@/lib/credentials'
+import { maskKey } from '@/lib/credentials'
 import { formatDateTime } from '@/lib/format'
 import { buildCategoryOrder, buildDays, buildMonths, buildTotals, normalize } from '@/lib/stats'
-import type { CardAssetRecord } from '@/lib/types'
+import type { CardAssetRecord, Credentials } from '@/requests'
 
 interface DashboardProps {
   credentials: Credentials

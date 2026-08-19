@@ -1,12 +1,8 @@
 import { useState } from 'react'
 import { AuthScreen } from '@/components/AuthScreen'
 import { Dashboard } from '@/components/Dashboard'
-import {
-  clearCredentials,
-  loadCredentials,
-  saveCredentials,
-  type Credentials,
-} from '@/lib/credentials'
+import { clearCredentials, loadCredentials, saveCredentials } from '@/lib/credentials'
+import type { Credentials } from '@/requests'
 
 export default function App() {
   const [credentials, setCredentials] = useState<Credentials | null>(() => loadCredentials())

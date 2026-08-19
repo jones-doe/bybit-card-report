@@ -6,7 +6,8 @@ import {
   tradeStatusLabel,
   type TxnDirection,
 } from './side'
-import type { CardAssetRecord, DayStat, MonthStat, Txn } from './types'
+import type { CardAssetRecord } from '@/requests'
+import type { DayStat, MonthStat, Txn } from './types'
 
 /** Fallback only: used when `side` carries a code we do not know. */
 const REFUND_RE = /refund|reversal|repay|cashback|credit|return/i
