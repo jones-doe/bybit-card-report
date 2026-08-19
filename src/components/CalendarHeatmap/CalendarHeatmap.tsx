@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { formatDateKey, formatUsd, MONTH_NAMES } from '@/lib/format'
+import { MONTH_NAMES, formatDateKey, formatUsd, pluralTxn } from '@/lib/format'
 import { makeHeatScale } from '@/lib/stats'
 import type { DayStat } from '@/lib/types'
-
-const WEEKDAYS = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+import type { HoverState } from './HoverState'
+import { Legend } from './Legend'
+import { MonthCells } from './MonthCells'
+import { WEEKDAYS } from './utils'
 
 type CalendarHeatmapProps = {
   days: Map<string, DayStat>
@@ -16,17 +18,6 @@ type CalendarHeatmapProps = {
   selectedDay: string | null
   onSelectDay: (dateKey: string | null) => void
 }
-
-type HoverState = {
-  x: number
-  y: number
-  dateKey: string
-  spend: number
-  refunds: number
-  count: number
-}
-
-const pad = (n: number) => String(n).padStart(2, '0')
 
 export const CalendarHeatmap = ({
   days,
@@ -142,129 +133,4 @@ export const CalendarHeatmap = ({
       )}
     </div>
   )
-}
-
-type MonthCellsProps = {
-  year: number
-  monthIndex: number
-  days: Map<string, DayStat>
-  level: (value: number) => number
-  selectedDay: string | null
-  onSelectDay: (dateKey: string | null) => void
-  onHover: (state: HoverState | null) => void
-}
-
-const MonthCells = ({
-  year,
-  monthIndex,
-  days,
-  level,
-  selectedDay,
-  onSelectDay,
-  onHover,
-}: MonthCellsProps) => {
-  const first = new Date(year, monthIndex, 1)
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
-  const offset = (first.getDay() + 6) % 7 // week starts on Monday
-
-  const cells = []
-  for (let i = 0; i < offset; i++) {
-    cells.push(<div key={`pad-${i}`} aria-hidden />)
-  }
-
-  for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber++) {
-    const dateKey = `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}`
-    const stat = days.get(dateKey)
-    const step = stat ? level(stat.spend) : 0
-    const isSelected = selectedDay === dateKey
-
-    cells.push(
-      <button
-        key={dateKey}
-        type="button"
-        disabled={!stat}
-        onClick={() => onSelectDay(isSelected ? null : dateKey)}
-        onMouseEnter={(e) =>
-          stat &&
-          onHover({
-            x: e.clientX,
-            y: e.clientY,
-            dateKey,
-            spend: stat.spend,
-            refunds: stat.refunds,
-            count: stat.count,
-          })
-        }
-        onMouseMove={(e) =>
-          stat &&
-          onHover({
-            x: e.clientX,
-            y: e.clientY,
-            dateKey,
-            spend: stat.spend,
-            refunds: stat.refunds,
-            count: stat.count,
-          })
-        }
-        onMouseLeave={() => onHover(null)}
-        title={
-          stat
-            ? `${formatDateKey(dateKey)} — ${formatUsd(stat.spend)}, ${stat.count} ${pluralTxn(stat.count)}`
-            : formatDateKey(dateKey)
-        }
-        aria-label={
-          stat ? `${formatDateKey(dateKey)}: ${formatUsd(stat.spend)}` : formatDateKey(dateKey)
-        }
-        className={[
-          'flex aspect-square items-center justify-center rounded-[4px] text-[10px] tabular-nums transition',
-          stat ? 'cursor-pointer hover:ring-foreground/40 hover:ring-2' : 'cursor-default',
-          isSelected ? 'ring-foreground ring-2' : '',
-        ].join(' ')}
-        style={{
-          backgroundColor: `var(--heat-${step || 'empty'})`,
-          color: step >= 4 ? 'var(--heat-ink-hi)' : 'var(--heat-ink-lo)',
-          opacity: stat ? 1 : 0.55,
-        }}
-      >
-        {dayNumber}
-      </button>,
-    )
-  }
-
-  return <>{cells}</>
-}
-
-const Legend = ({ thresholds }: { thresholds: number[] }) => {
-  return (
-    <div className="text-muted-foreground flex items-center gap-2 text-xs">
-      <span>меньше</span>
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((step) => (
-          <div
-            key={step}
-            className="size-4 rounded-[4px]"
-            style={{ backgroundColor: `var(--heat-${step})` }}
-            title={
-              thresholds.length === 4
-                ? step === 1
-                  ? `до ${formatUsd(thresholds[0])}`
-                  : step === 5
-                    ? `свыше ${formatUsd(thresholds[3])}`
-                    : `${formatUsd(thresholds[step - 2])} – ${formatUsd(thresholds[step - 1])}`
-                : undefined
-            }
-          />
-        ))}
-      </div>
-      <span>больше</span>
-    </div>
-  )
-}
-
-export const pluralTxn = (count: number) => {
-  const mod10 = count % 10
-  const mod100 = count % 100
-  if (mod10 === 1 && mod100 !== 11) return 'операция'
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'операции'
-  return 'операций'
 }

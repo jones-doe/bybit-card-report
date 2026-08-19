@@ -2,10 +2,9 @@ import { X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatDateKey, formatTime, formatUsd } from '@/lib/format'
+import { formatDateKey, formatTime, formatUsd, pluralTxn } from '@/lib/format'
 import { isPlainPurchase } from '@/lib/side'
 import type { DayStat } from '@/lib/types'
-import { pluralTxn } from './CalendarHeatmap'
 
 type DayDetailsProps = {
   day: DayStat

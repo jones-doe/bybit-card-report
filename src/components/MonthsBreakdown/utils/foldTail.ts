@@ -1,0 +1,42 @@
+import type { CategoryStat, MerchantStat } from '@/lib/types'
+import { OTHER_CATEGORY } from '@/lib/stats'
+
+export const foldTail = (
+  categories: CategoryStat[],
+  keep: (c: CategoryStat, index: number) => boolean,
+): CategoryStat[] => {
+  const kept = categories.filter((c, i) => keep(c, i) && c.spend > 0)
+  const tail = categories.filter((c, i) => !keep(c, i))
+  if (tail.length === 0) return kept
+
+  const spend = tail.reduce((sum, c) => sum + c.spend, 0)
+
+  // Merchants of the folded categories are merged, so opening "Прочее" still
+  // answers where that money went.
+  const merged = new Map<string, MerchantStat>()
+  for (const category of tail) {
+    for (const m of category.merchants) {
+      const existing = merged.get(m.name)
+      if (existing) {
+        existing.spend += m.spend
+        existing.refunds += m.refunds
+        existing.count += m.count
+      } else {
+        merged.set(m.name, { ...m })
+      }
+    }
+  }
+
+  const folded: CategoryStat = {
+    name: tail.length > 1 ? `${OTHER_CATEGORY} (${tail.length})` : tail[0].name,
+    slot: 0,
+    spend,
+    refunds: tail.reduce((sum, c) => sum + c.refunds, 0),
+    count: tail.reduce((sum, c) => sum + c.count, 0),
+    share: tail.reduce((sum, c) => sum + c.share, 0),
+    merchants: [...merged.values()]
+      .map((m) => ({ ...m, share: spend > 0 ? m.spend / spend : 0 }))
+      .sort((a, b) => b.spend - a.spend),
+  }
+  return folded.spend > 0 ? [...kept, folded].sort((a, b) => b.spend - a.spend) : kept
+}
