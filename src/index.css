@@ -179,3 +179,14 @@
   --cat-6: #008300;
   --cat-7: #9085e9;
 }
+
+/* Refunds share the green with whatever category happens to hold that slot, so
+   they carry a hatch as a second channel — hue alone would be ambiguous. */
+.refund-hatch {
+  background-color: var(--heat-refund);
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.45) 0 3px,
+    transparent 3px 6px
+  );
+}

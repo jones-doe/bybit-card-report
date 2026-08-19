@@ -56,7 +56,7 @@ export function MonthsBreakdown({
     return <p className="text-muted-foreground text-sm">Нет данных за период.</p>
   }
 
-  const max = Math.max(...months.map((m) => m.spend), 1)
+  const max = Math.max(...months.map((m) => m.net), 1)
   const legend = [...categoryOrder.entries()].sort((a, b) => a[1] - b[1])
 
   return (
@@ -107,7 +107,9 @@ export function MonthsBreakdown({
                 <span className="flex h-5 items-center">
                   <span
                     className="flex h-2.5 gap-[2px] [&>*:last-child]:rounded-r-[4px]"
-                    style={{ width: `${Math.max((month.spend / max) * 100, 1.5)}%` }}
+                    // Length is the net figure; the segments inside keep the
+                    // proportions of what was actually spent.
+                    style={{ width: `${Math.max((month.net / max) * 100, 1.5)}%` }}
                   >
                     {foldTail(categories, (c) => c.slot > 0).map((c) => (
                         <span
@@ -124,10 +126,16 @@ export function MonthsBreakdown({
 
                 <span className="text-right">
                   <span className="block text-sm font-semibold tabular-nums">
-                    {formatUsd(month.spend)}
+                    {formatUsd(month.net)}
                   </span>
                   <span className="text-muted-foreground block text-xs tabular-nums">
                     {month.count} {pluralTxn(month.count)} · ср. {formatUsd(month.avgCheck)}
+                    {month.refunds > 0 && (
+                      <span style={{ color: 'var(--heat-refund)' }}>
+                        {' '}
+                        · возвраты {formatUsd(month.refunds)}
+                      </span>
+                    )}
                   </span>
                 </span>
               </button>
@@ -156,13 +164,21 @@ interface MonthPanelProps {
 function MonthPanel({ month, categories, onOpenTransactions }: MonthPanelProps) {
   const rows = foldTail(categories, (_, index) => index < TABLE_LIMIT)
   const max = Math.max(...rows.map((c) => c.spend), 1)
+  const refundCount = month.days.reduce(
+    (total, day) => total + day.txns.filter((t) => t.isRefund).length,
+    0,
+  )
 
   return (
     <div className="bg-muted/40 mt-1 mb-2 space-y-4 rounded-lg px-4 py-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Потрачено" value={formatUsd(month.spend)} />
-        <Metric label="Возвраты" value={formatUsd(month.refunds)} />
-        <Metric label="Средний чек" value={formatUsd(month.avgCheck)} />
+        <Metric
+          label="Возвраты"
+          value={month.refunds > 0 ? `−${formatUsd(month.refunds)}` : formatUsd(0)}
+          tone={month.refunds > 0 ? 'refund' : undefined}
+        />
+        <Metric label="Итого" value={formatUsd(month.net)} hint="потрачено минус возвраты" />
         <Metric
           label="Дней с тратами"
           value={String(month.activeDays)}
@@ -212,6 +228,37 @@ function MonthPanel({ month, categories, onOpenTransactions }: MonthPanelProps) 
               </span>
             </div>
           ))}
+
+          {month.refunds > 0 && (
+            <div className="mt-1 grid grid-cols-[minmax(0,11rem)_1fr_auto] items-center gap-3 border-t pt-2">
+              <span className="flex min-w-0 items-center gap-2">
+                <span className="refund-hatch size-2.5 shrink-0 rounded-[3px]" />
+                <span className="truncate text-sm">Возвраты</span>
+              </span>
+
+              <span className="flex h-4 items-center">
+                <span
+                  className="refund-hatch h-2 rounded-r-[4px]"
+                  style={{ width: `${Math.max((month.refunds / max) * 100, 1)}%` }}
+                />
+              </span>
+
+              <span className="flex items-baseline gap-3 text-right">
+                <span className="text-muted-foreground w-10 text-xs tabular-nums">
+                  −{percent(month.spend > 0 ? month.refunds / month.spend : 0)}
+                </span>
+                <span
+                  className="w-24 text-sm font-medium tabular-nums"
+                  style={{ color: 'var(--heat-refund)' }}
+                >
+                  −{formatUsd(month.refunds)}
+                </span>
+                <span className="text-muted-foreground w-20 text-xs tabular-nums">
+                  {refundCount} {pluralTxn(refundCount)}
+                </span>
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -223,11 +270,26 @@ function MonthPanel({ month, categories, onOpenTransactions }: MonthPanelProps) 
   )
 }
 
-function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
+function Metric({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string
+  value: string
+  hint?: string
+  tone?: 'refund'
+}) {
   return (
     <div>
       <div className="text-muted-foreground text-xs">{label}</div>
-      <div className="text-xl font-semibold tabular-nums">{value}</div>
+      <div
+        className="text-xl font-semibold tabular-nums"
+        style={tone === 'refund' ? { color: 'var(--heat-refund)' } : undefined}
+      >
+        {value}
+      </div>
       {hint && <div className="text-muted-foreground text-xs">{hint}</div>}
     </div>
   )

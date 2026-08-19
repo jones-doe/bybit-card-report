@@ -77,7 +77,7 @@ export function normalize(records: CardAssetRecord[]): Txn[] {
 
     const { category, categoryDetail, mcc } = categorize(r)
     const rawUsd = usdAmountOf(r)
-    const flags = `${r.side ?? ''} ${r.status ?? ''} ${r.tradeStatus ?? ''}`
+    const flags = `${r.side ?? ''} ${r.status ?? ''} ${r.tradeStatus ?? ''} ${r.type ?? ''}`
     const isRefund = REFUND_RE.test(flags) || (rawUsd !== null && rawUsd < 0)
     const magnitude = rawUsd === null ? null : Math.abs(rawUsd)
     const dateKey = dateKeyOf(ts)
