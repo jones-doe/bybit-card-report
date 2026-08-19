@@ -1,6 +1,7 @@
 import { sleep } from '@/lib/sleep'
-import { PAGE_LIMIT, queryAssetRecords } from '@/requests'
-import type { CardAssetRecordsResult, Credentials } from '@/requests'
+import { PAGE_LIMIT, queryAssetRecords } from '@/requests/queryAssetRecords'
+import type { CardAssetRecordsResult } from '@/requests/queryAssetRecords'
+import type { Credentials } from '@/requests/shared'
 
 /**
  * Gap before every page after the first. This is throttling, not retrying — it

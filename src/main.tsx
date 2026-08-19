@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import './index.css'
 import App from './App.tsx'
-import { PERSISTED_CACHE_MAX_AGE_MS, persister, queryClient } from '@/queries'
+import { PERSISTED_CACHE_MAX_AGE_MS, persister, queryClient } from '@/queries/client'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

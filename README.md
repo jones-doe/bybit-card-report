@@ -41,34 +41,34 @@ npm run dev
 
 ## Как это устроено
 
-- [`src/requests/`](src/requests) — слой обращений к API. Чёрный ящик: принимает тело запроса
-  ровно в том виде, в каком его описывает эндпоинт, и отдаёт `result` как его прислал сервер,
-  без подстановки умолчаний и переименования полей. Внутри — подпись, `fetch`, распаковка
-  конверта и `BybitApiError` на любой сбой. Один файл — одна сущность (тип, константа, функция),
-  наружу всё идёт через [`src/requests/index.ts`](src/requests/index.ts) поимённо, без wildcard.
-  Серверные типы живут только здесь: [`CardAssetRecord`](src/requests/types/CardAssetRecord.ts)
-  описывает запись как она приходит, со всеми особенностями. Новые эндпоинты добавляются
-  отдельным файлом рядом с [`queryAssetRecords.ts`](src/requests/queryAssetRecords.ts) и строкой
-  в индексе.
-- [`src/queries/`](src/queries) — слой данных на TanStack Query.
-  [`useAssetRecordsQuery`](src/queries/useAssetRecordsQuery.ts) — `useInfiniteQuery`, который
+- [`src/requests/`](src/requests) — слой обращений к API. Каждый запрос — своя папка со своим
+  `index.ts`: [`queryAssetRecords/`](src/requests/queryAssetRecords) держит саму функцию, её
+  параметры, `PAGE_LIMIT` и типы ответа. Общая обвязка — подпись, `postPrivate`, `BybitApiError`
+  — лежит в [`shared/`](src/requests/shared). Чёрный ящик: запрос принимает тело ровно в том
+  виде, в каком его описывает эндпоинт, и отдаёт `result` как прислал сервер, без подстановки
+  умолчаний и переименования полей. Серверные типы живут только здесь;
+  [`CardAssetRecord`](src/requests/queryAssetRecords/CardAssetRecord.ts) описывает запись со
+  всеми особенностями. Новый эндпоинт — новая папка со своим индексом. Wildcard-экспортов нет.
+- [`src/queries/`](src/queries) — слой данных на TanStack Query. Каждый квери — своя папка со
+  своим `index.ts`; общий клиент и персистенс в [`client/`](src/queries/client).
+  [`useAssetRecordsQuery`](src/queries/useAssetRecordsQuery) — `useInfiniteQuery`, который
   идёт по страницам до конца истории (`limit: 100` — технический максимум, следующая страница
   запрашивается, пока не придёт неполная или не наберётся `totalCount`). Статистика считается
   только после того, как собрана вся история.
 - **Лимит запросов и кэш — на стороне react-query.** Повторы описаны декларативно в
-  [`queryClient.ts`](src/queries/queryClient.ts): ретраятся только `retCode 10006` и HTTP 403,
+  [`queryClient.ts`](src/queries/client/queryClient.ts): ретраятся только `retCode 10006` и HTTP 403,
   до 7 раз, с экспоненциальной задержкой 1.5 → 3 → 6 → … → 60 с; если ответ принёс
   `X-Bapi-Limit-Reset-Timestamp`, ожидание тянется до указанного момента. Ошибка ключа или
   подписи не ретраится вовсе — она сама не пройдёт. Перед каждой страницей, кроме первой, стоит
   пауза 350 мс: это троттлинг, а не повтор, он держит обход под лимитом, чтобы ретраи оставались
   исключением.
 - **Кэш** живёт в `localStorage` под ключом `bybit-card-report:query-cache`
-  ([`persister.ts`](src/queries/persister.ts)), поэтому перезагрузка страницы поднимает историю
+  ([`persister.ts`](src/queries/client/persister.ts)), поэтому перезагрузка страницы поднимает историю
   без единого запроса. Срок жизни задан `maxAge` (30 дней); `gcTime` при этом равен `Infinity` —
   любое конечное значение больше ~24.8 дня переполняет `setTimeout`, тот срабатывает мгновенно и
   восстановленный кэш молча пропадает.
 - **Вид операции.** Поле `side` — числовой код, а не слово:
-  [`src/lib/side.ts`](src/lib/side.ts) держит документированный enum
+  [`src/lib/side`](src/lib/side) держит документированный enum
   (`3` — покупка, `5` — возврат, `6` — чарджбэк, `13` — снятие в банкомате и так
   далее) и раскладывает коды на три направления: списание, возврат и «холд».
   Холды — это авторизации и заявки (`1`, `2`, `10`, `11`): они видны в списке
@@ -78,12 +78,12 @@ npm run dev
 - **Формат данных.** API типизирует числа вольно: `txnCreate` и `uid` приходят
   строками, суммы бывают в научной нотации (`0E-8`), а `merchName` и `merchCity`
   дополнены пробелами справа. Всё это нормализуется при разборе, поэтому типы в
-  [`src/lib/types.ts`](src/lib/types.ts) описывают реальный ответ, а не
+  [`src/lib/types`](src/lib/types) описывают реальный ответ, а не
   идеальный. Значение `type: SIDE_QUERY_FINANCIAL_ALL` в запросе не описано в
   документации (там перечислены `SIDE_QUERY_AUTH`, `SIDE_QUERY_FINANCIAL`,
   `SIDE_QUERY_REFUND`), но именно оно возвращает покупки и возвраты вместе.
 - **Категории.** Bybit присылает категорию мерчанта голым MCC (ISO 18245) — четырёхзначным
-  кодом в `mccCode` и `merchCategoryDesc`. [`src/lib/mcc-data.ts`](src/lib/mcc-data.ts) содержит
+  кодом в `mccCode` и `merchCategoryDesc`. [`src/lib/mcc/mccData.ts`](src/lib/mcc/mccData.ts) содержит
   вшитый справочник всех 981 кода (датасет [greggles/mcc-codes](https://github.com/greggles/mcc-codes),
   Unlicense / public domain) плюс правила свёртки кодов в 22 понятные группы: «Продукты»,
   «Кафе и рестораны», «Транспорт», «Топливо», «Путешествия» и так далее. Явные коды имеют

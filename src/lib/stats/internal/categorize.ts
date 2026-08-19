@@ -1,5 +1,5 @@
 import { mccDescription, mccGroup, normalizeMcc } from '@/lib/mcc'
-import type { CardAssetRecord } from '@/requests'
+import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 import { NO_CATEGORY } from '../constants'
 
 /**

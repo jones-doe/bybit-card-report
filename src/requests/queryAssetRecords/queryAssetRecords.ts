@@ -1,7 +1,7 @@
-import { postPrivate } from './internal/postPrivate'
-import type { CardAssetRecordsResult } from './types/CardAssetRecordsResult'
-import type { Credentials } from './types/Credentials'
-import type { QueryAssetRecordsParams } from './types/QueryAssetRecordsParams'
+import { postPrivate } from '../shared'
+import type { CardAssetRecordsResult } from './CardAssetRecordsResult'
+import type { Credentials } from '../shared'
+import type { QueryAssetRecordsParams } from './QueryAssetRecordsParams'
 
 const PATH = '/v5/card/transaction/query-asset-records'
 

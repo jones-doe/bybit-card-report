@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query'
-import { isRateLimited } from '@/requests'
+import { isRateLimited } from '@/requests/shared'
 
 /** Rate-limit retries. Anything else fails immediately — a bad key will not heal. */
 const MAX_RATE_LIMIT_RETRIES = 7

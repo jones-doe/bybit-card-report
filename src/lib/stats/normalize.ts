@@ -1,6 +1,6 @@
 import { sideLabel, statusLabel, tradeStatusLabel } from '@/lib/side'
 import type { Txn } from '@/lib/types'
-import type { CardAssetRecord } from '@/requests'
+import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 import { dateKeyOf } from './dateKeyOf'
 import { monthKeyOf } from './monthKeyOf'
 import { categorize } from './internal/categorize'

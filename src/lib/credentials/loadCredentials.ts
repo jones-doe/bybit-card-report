@@ -1,4 +1,4 @@
-import type { Credentials } from '@/requests'
+import type { Credentials } from '@/requests/shared'
 import { CREDENTIALS_STORAGE_KEY } from './storageKey'
 
 export function loadCredentials(): Credentials | null {

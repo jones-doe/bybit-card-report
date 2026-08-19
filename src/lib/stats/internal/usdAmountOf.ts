@@ -1,4 +1,4 @@
-import type { CardAssetRecord } from '@/requests'
+import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 import { toNumber } from './toNumber'
 
 /** Picks the USD figure out of the several amount/currency pairs on a record. */

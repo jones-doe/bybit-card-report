@@ -14,8 +14,8 @@ import { TransactionsTable } from './TransactionsTable'
 import { maskKey } from '@/lib/credentials'
 import { formatDateTime } from '@/lib/format'
 import { buildCategoryOrder, buildDays, buildMonths, buildTotals, normalize } from '@/lib/stats'
-import { assetRecordsQueryKey, useAssetRecordsQuery } from '@/queries'
-import type { Credentials } from '@/requests'
+import { assetRecordsQueryKey, useAssetRecordsQuery } from '@/queries/useAssetRecordsQuery'
+import type { Credentials } from '@/requests/shared'
 
 interface DashboardProps {
   credentials: Credentials

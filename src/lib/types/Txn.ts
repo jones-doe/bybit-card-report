@@ -1,4 +1,4 @@
-import type { CardAssetRecord } from '@/requests'
+import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 import type { TxnDirection } from '@/lib/side'
 
 /** A record normalised for statistics. All money is USD. */

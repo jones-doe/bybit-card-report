@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import type { Credentials } from '@/requests'
+import type { Credentials } from '@/requests/shared'
 
 interface AuthScreenProps {
   onSubmit: (credentials: Credentials) => void

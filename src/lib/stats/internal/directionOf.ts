@@ -1,5 +1,5 @@
 import { sideDirection, type TxnDirection } from '@/lib/side'
-import type { CardAssetRecord } from '@/requests'
+import type { CardAssetRecord } from '@/requests/queryAssetRecords'
 
 /** Fallback only: used when `side` carries a code we do not know. */
 const REFUND_RE = /refund|reversal|repay|cashback|credit|return/i

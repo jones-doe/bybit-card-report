@@ -1,28 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { PAGE_LIMIT } from '@/requests'
-import type { CardAssetRecord, Credentials } from '@/requests'
+import { PAGE_LIMIT } from '@/requests/queryAssetRecords'
+import type { Credentials } from '@/requests/shared'
+import type { AssetRecordsQuery } from './AssetRecordsQuery'
 import { assetRecordsQueryKey } from './assetRecordsQueryKey'
 import { fetchAssetRecordsPage } from './fetchAssetRecordsPage'
-
-export interface AssetRecordsQuery {
-  /** Every page flattened. Complete only once `isComplete` is true. */
-  records: CardAssetRecord[]
-  /** totalCount as reported by the last page, when it reported one. */
-  total: number | null
-  pagesFetched: number
-  /** No data yet — first page still in flight. */
-  isLoading: boolean
-  /** Any request in flight, including the walk over later pages. */
-  isFetching: boolean
-  /** The whole history has landed. */
-  isComplete: boolean
-  /** A request failed and is being retried; counts the failures so far. */
-  failureCount: number
-  error: Error | null
-  fetchedAt: number | null
-  refetch: () => void
-}
 
 /**
  * The full card history. Pages are walked to the end because statistics are
