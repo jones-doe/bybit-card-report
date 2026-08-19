@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, LogOut, Moon, RefreshCw, Sun } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -10,12 +11,11 @@ import { DayDetails } from './DayDetails'
 import { MonthsBreakdown } from './MonthsBreakdown'
 import { StatTiles } from './StatTiles'
 import { TransactionsTable } from './TransactionsTable'
-import { fetchAllAssetRecords, type FetchProgress } from '@/lib/bybit'
-import { clearCachedRecords, loadCachedRecords, saveCachedRecords } from '@/lib/cache'
 import { maskKey } from '@/lib/credentials'
 import { formatDateTime } from '@/lib/format'
 import { buildCategoryOrder, buildDays, buildMonths, buildTotals, normalize } from '@/lib/stats'
-import type { CardAssetRecord, Credentials } from '@/requests'
+import { assetRecordsQueryKey, useAssetRecordsQuery } from '@/queries'
+import type { Credentials } from '@/requests'
 
 interface DashboardProps {
   credentials: Credentials
@@ -23,63 +23,15 @@ interface DashboardProps {
 }
 
 export function Dashboard({ credentials, onLogout }: DashboardProps) {
-  const [records, setRecords] = useState<CardAssetRecord[] | null>(null)
-  const [fetchedAt, setFetchedAt] = useState<number | null>(null)
-  const [progress, setProgress] = useState<FetchProgress | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
+  const queryClient = useQueryClient()
+  const { records, total, pagesFetched, isLoading, isFetching, failureCount, error, fetchedAt, refetch } =
+    useAssetRecordsQuery(credentials)
 
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
   const [tab, setTab] = useState('calendar')
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [monthFilter, setMonthFilter] = useState('all')
-
-  const abortRef = useRef<AbortController | null>(null)
-  const startedRef = useRef(false)
-
-  const load = useCallback(async () => {
-    abortRef.current?.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
-
-    setLoading(true)
-    setError(null)
-    setProgress({ page: 0, fetched: 0, total: null })
-
-    try {
-      const all = await fetchAllAssetRecords({
-        credentials,
-        signal: controller.signal,
-        onProgress: setProgress,
-      })
-      setRecords(all)
-      setFetchedAt(Date.now())
-      saveCachedRecords(all)
-    } catch (e) {
-      if ((e as Error).name === 'AbortError') return
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      // A superseded run must not touch the spinner — the newer one owns it.
-      if (abortRef.current === controller) {
-        setLoading(false)
-        setProgress(null)
-      }
-    }
-  }, [credentials])
-
-  useEffect(() => {
-    if (startedRef.current) return
-    startedRef.current = true
-
-    const cached = loadCachedRecords()
-    if (cached && cached.records.length > 0) {
-      setRecords(cached.records)
-      setFetchedAt(cached.fetchedAt)
-      return
-    }
-    void load()
-  }, [load])
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
@@ -104,9 +56,7 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
   const selectedDayStat = selectedDay ? (days.get(selectedDay) ?? null) : null
 
   const percent =
-    progress && progress.total
-      ? Math.min(100, Math.round((progress.fetched / progress.total) * 100))
-      : null
+    total && total > 0 ? Math.min(100, Math.round((records.length / total) * 100)) : null
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
@@ -116,7 +66,7 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
           <p className="text-muted-foreground text-sm">
             Ключ {maskKey(credentials.apiKey)}
             {fetchedAt ? ` · данные от ${formatDateTime(fetchedAt)}` : ''}
-            {records ? ` · ${records.length} записей` : ''}
+            {records.length > 0 ? ` · ${records.length} записей` : ''}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -128,15 +78,15 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
           >
             {dark ? <Sun /> : <Moon />}
           </Button>
-          <Button variant="outline" onClick={() => void load()} disabled={loading}>
-            <RefreshCw className={loading ? 'animate-spin' : ''} />
+          <Button variant="outline" onClick={refetch} disabled={isFetching}>
+            <RefreshCw className={isFetching ? 'animate-spin' : ''} />
             Обновить
           </Button>
           <Button
             variant="ghost"
             onClick={() => {
-              abortRef.current?.abort()
-              clearCachedRecords()
+              // Drop this key's cached history, persisted copy included.
+              queryClient.removeQueries({ queryKey: assetRecordsQueryKey(credentials.apiKey) })
               onLogout()
             }}
           >
@@ -146,19 +96,19 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
         </div>
       </header>
 
-      {loading && (
+      {isFetching && (
         <div className="space-y-2">
           <div className="text-muted-foreground flex items-center justify-between gap-3 text-sm tabular-nums">
             <span>
-              {progress?.retry ? (
+              {failureCount > 0 ? (
                 <>
-                  Лимит запросов Bybit — жду {progress.retry.secondsLeft} с и повторяю страницу{' '}
-                  {progress.page} (попытка {progress.retry.attempt})
+                  Лимит запросов Bybit — жду и повторяю страницу {pagesFetched + 1} (попытка{' '}
+                  {failureCount})
                 </>
               ) : (
                 <>
-                  Загружаю историю: страница {progress?.page ?? 0}, записей {progress?.fetched ?? 0}
-                  {progress?.total ? ` из ${progress.total}` : ''}
+                  Загружаю историю: страница {pagesFetched + 1}, записей {records.length}
+                  {total ? ` из ${total}` : ''}
                 </>
               )}
             </span>
@@ -173,7 +123,7 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
           <AlertCircle />
           <AlertTitle>Не удалось загрузить историю</AlertTitle>
           <AlertDescription>
-            <p>{error}</p>
+            <p>{error.message}</p>
             <p className="text-xs">
               Коды 10003/10004/10005 означают проблему с ключом, подписью или правами — проверьте,
               что ключ активен и у него есть доступ к разделу Bybit Card. Код 10006 — лимит
@@ -195,7 +145,7 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
         </Alert>
       )}
 
-      {!records && loading && (
+      {isLoading && (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
             <Skeleton key={i} className="h-24" />
@@ -203,11 +153,11 @@ export function Dashboard({ credentials, onLogout }: DashboardProps) {
         </div>
       )}
 
-      {records && records.length === 0 && !loading && (
+      {records.length === 0 && !isFetching && !isLoading && !error && (
         <p className="text-muted-foreground">История пуста.</p>
       )}
 
-      {records && records.length > 0 && (
+      {records.length > 0 && (
         <>
           <StatTiles totals={totals} />
 
