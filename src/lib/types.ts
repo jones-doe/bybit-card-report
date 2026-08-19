@@ -1,4 +1,6 @@
 /** Raw record as returned by POST /v5/card/transaction/query-asset-records. */
+import type { TxnDirection } from './side'
+
 export interface CardAssetRecord {
   pan4?: string
   pan6?: string
@@ -70,6 +72,9 @@ export interface Txn {
   city: string
   status: string
   side: string
+  /** Human label for the documented `side` code, empty when unknown. */
+  sideLabel: string
+  direction: TxnDirection
   fees: number
   isRefund: boolean
   raw: CardAssetRecord
@@ -81,6 +86,8 @@ export interface DayStat {
   refunds: number
   net: number
   count: number
+  /** Purchases only — refunds and holds must not dilute an average cheque. */
+  spendCount: number
   txns: Txn[]
 }
 
@@ -90,6 +97,7 @@ export interface MonthStat {
   refunds: number
   net: number
   count: number
+  spendCount: number
   activeDays: number
   avgCheck: number
   maxDay: DayStat | null

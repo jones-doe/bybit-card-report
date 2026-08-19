@@ -16,10 +16,14 @@ export function StatTiles({ totals }: { totals: Totals }) {
     {
       label: 'Транзакций',
       value: String(totals.count),
-      hint:
+      hint: [
         totals.firstTs && totals.lastTs
           ? `${formatDateTime(totals.firstTs)} — ${formatDateTime(totals.lastTs)}`
-          : undefined,
+          : null,
+        totals.holdCount > 0 ? `из них ${totals.holdCount} без списания` : null,
+      ]
+        .filter(Boolean)
+        .join(' · '),
     },
     { label: 'Средний чек', value: formatUsd(totals.avgCheck) },
     {

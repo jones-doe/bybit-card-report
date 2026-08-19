@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDateKey, formatTime, formatUsd } from '@/lib/format'
+import { isPlainPurchase } from '@/lib/side'
 import type { DayStat } from '@/lib/types'
 import { pluralTxn } from './CalendarHeatmap'
 
@@ -37,9 +38,9 @@ export function DayDetails({ day, onClose }: DayDetailsProps) {
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">
                   {t.merchant}
-                  {t.isRefund && (
+                  {t.sideLabel && !isPlainPurchase(t.side) && (
                     <Badge variant="secondary" className="ml-2">
-                      возврат
+                      {t.sideLabel.toLowerCase()}
                     </Badge>
                   )}
                 </div>
@@ -51,7 +52,9 @@ export function DayDetails({ day, onClose }: DayDetailsProps) {
                 </div>
               </div>
               <div className="shrink-0 text-right text-sm font-semibold tabular-nums">
-                {t.usd === null ? (
+                {t.direction === 'hold' ? (
+                  <span className="text-muted-foreground font-normal">не списано</span>
+                ) : t.usd === null ? (
                   <span className="text-muted-foreground font-normal">нет USD</span>
                 ) : (
                   <span style={t.isRefund ? { color: 'var(--heat-refund)' } : undefined}>

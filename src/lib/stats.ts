@@ -1,6 +1,8 @@
 import { mccDescription, mccGroup, normalizeMcc } from './mcc'
+import { sideDirection, sideLabel, type TxnDirection } from './side'
 import type { CardAssetRecord, DayStat, MonthStat, Txn } from './types'
 
+/** Fallback only: used when `side` carries a code we do not know. */
 const REFUND_RE = /refund|reversal|repay|cashback|credit|return/i
 
 export const NO_CATEGORY = 'Без категории'
@@ -68,6 +70,20 @@ function categorize(r: CardAssetRecord): {
   }
 }
 
+/**
+ * `side` is the authoritative signal — a documented numeric code. The old text
+ * heuristic stays only for codes outside the documented set, where a negative
+ * amount or a wordy status is all we have to go on.
+ */
+function directionOf(r: CardAssetRecord, rawUsd: number | null): TxnDirection {
+  const documented = sideDirection(r.side)
+  if (documented) return documented
+
+  const flags = `${r.side ?? ''} ${r.status ?? ''} ${r.tradeStatus ?? ''} ${r.type ?? ''}`
+  if (REFUND_RE.test(flags) || (rawUsd !== null && rawUsd < 0)) return 'refund'
+  return 'spend'
+}
+
 export function normalize(records: CardAssetRecord[]): Txn[] {
   const txns: Txn[] = []
 
@@ -77,8 +93,8 @@ export function normalize(records: CardAssetRecord[]): Txn[] {
 
     const { category, categoryDetail, mcc } = categorize(r)
     const rawUsd = usdAmountOf(r)
-    const flags = `${r.side ?? ''} ${r.status ?? ''} ${r.tradeStatus ?? ''} ${r.type ?? ''}`
-    const isRefund = REFUND_RE.test(flags) || (rawUsd !== null && rawUsd < 0)
+    const direction = directionOf(r, rawUsd)
+    const isRefund = direction === 'refund'
     const magnitude = rawUsd === null ? null : Math.abs(rawUsd)
     const dateKey = dateKeyOf(ts)
 
@@ -98,6 +114,8 @@ export function normalize(records: CardAssetRecord[]): Txn[] {
       city: String(r.merchCity || '').trim(),
       status: String(r.status || r.tradeStatus || '').trim(),
       side: String(r.side || '').trim(),
+      sideLabel: sideLabel(r.side) ?? '',
+      direction,
       fees: toNumber(r.totalFees) ?? 0,
       isRefund,
       raw: r,
@@ -112,14 +130,26 @@ export function buildDays(txns: Txn[]): Map<string, DayStat> {
   for (const t of txns) {
     let day = days.get(t.dateKey)
     if (!day) {
-      day = { dateKey: t.dateKey, spend: 0, refunds: 0, net: 0, count: 0, txns: [] }
+      day = {
+        dateKey: t.dateKey,
+        spend: 0,
+        refunds: 0,
+        net: 0,
+        count: 0,
+        spendCount: 0,
+        txns: [],
+      }
       days.set(t.dateKey, day)
     }
     day.count += 1
     day.txns.push(t)
-    if (t.usd === null) continue
-    if (t.usd >= 0) day.spend += t.usd
-    else day.refunds += -t.usd
+    if (t.usd === null || t.direction === 'hold') continue
+    if (t.usd >= 0) {
+      day.spend += t.usd
+      day.spendCount += 1
+    } else {
+      day.refunds += -t.usd
+    }
     day.net = day.spend - day.refunds
   }
   return days
@@ -138,6 +168,7 @@ export function buildMonths(days: Map<string, DayStat>): MonthStat[] {
         refunds: 0,
         net: 0,
         count: 0,
+        spendCount: 0,
         activeDays: 0,
         avgCheck: 0,
         maxDay: null,
@@ -148,14 +179,15 @@ export function buildMonths(days: Map<string, DayStat>): MonthStat[] {
     month.spend += day.spend
     month.refunds += day.refunds
     month.count += day.count
-    month.activeDays += 1
+    month.spendCount += day.spendCount
+    if (day.spend > 0) month.activeDays += 1
     month.days.push(day)
     if (!month.maxDay || day.spend > month.maxDay.spend) month.maxDay = day
   }
 
   for (const month of months.values()) {
     month.net = month.spend - month.refunds
-    month.avgCheck = month.count > 0 ? month.spend / month.count : 0
+    month.avgCheck = month.spendCount > 0 ? month.spend / month.spendCount : 0
     month.days.sort((a, b) => a.dateKey.localeCompare(b.dateKey))
   }
 
@@ -172,6 +204,8 @@ export interface Totals {
   activeDays: number
   avgPerActiveDay: number
   unresolvedCount: number
+  /** Authorisations and requests — real records, but not settled money. */
+  holdCount: number
   firstTs: number | null
   lastTs: number | null
 }
@@ -182,6 +216,7 @@ export function buildTotals(txns: Txn[], days: Map<string, DayStat>): Totals {
   let fees = 0
   let spendCount = 0
   let unresolvedCount = 0
+  let holdCount = 0
   let firstTs: number | null = null
   let lastTs: number | null = null
 
@@ -189,6 +224,10 @@ export function buildTotals(txns: Txn[], days: Map<string, DayStat>): Totals {
     fees += t.fees
     if (firstTs === null || t.ts < firstTs) firstTs = t.ts
     if (lastTs === null || t.ts > lastTs) lastTs = t.ts
+    if (t.direction === 'hold') {
+      holdCount += 1
+      continue
+    }
     if (t.usd === null) {
       unresolvedCount += 1
       continue
@@ -212,6 +251,7 @@ export function buildTotals(txns: Txn[], days: Map<string, DayStat>): Totals {
     activeDays,
     avgPerActiveDay: activeDays > 0 ? spend / activeDays : 0,
     unresolvedCount,
+    holdCount,
     firstTs,
     lastTs,
   }
@@ -284,7 +324,7 @@ export function buildMonthCategories(
 
   for (const day of month.days) {
     for (const t of day.txns) {
-      if (t.usd === null) continue
+      if (t.usd === null || t.direction === 'hold') continue
       // Kept under its own name even outside the top 7 — the table names every
       // category, only the stacked bar folds the tail into "Прочее".
       const name = t.category || NO_CATEGORY
@@ -295,9 +335,14 @@ export function buildMonthCategories(
         stat = { name, slot, spend: 0, refunds: 0, count: 0, share: 0 }
         acc.set(name, stat)
       }
-      stat.count += 1
-      if (t.usd >= 0) stat.spend += t.usd
-      else stat.refunds += -t.usd
+      // Only purchases are counted here: the refund is reported on its own
+      // row, so counting it in its category too would double it.
+      if (t.usd >= 0) {
+        stat.spend += t.usd
+        stat.count += 1
+      } else {
+        stat.refunds += -t.usd
+      }
     }
   }
 

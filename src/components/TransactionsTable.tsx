@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatDateTime, formatMonthKey, formatUsd } from '@/lib/format'
+import { isPlainPurchase } from '@/lib/side'
 import type { Txn } from '@/lib/types'
 
 const PAGE_SIZE = 100
@@ -124,9 +125,9 @@ export function TransactionsTable({
                   </TableCell>
                   <TableCell className="font-medium">
                     {t.merchant}
-                    {t.isRefund && (
+                    {t.sideLabel && !isPlainPurchase(t.side) && (
                       <Badge variant="secondary" className="ml-2">
-                        возврат
+                        {t.sideLabel.toLowerCase()}
                       </Badge>
                     )}
                   </TableCell>
@@ -143,7 +144,9 @@ export function TransactionsTable({
                     {[t.city, t.country].filter(Boolean).join(', ') || '—'}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {t.usd === null ? (
+                    {t.direction === 'hold' ? (
+                      <span className="text-muted-foreground">не списано</span>
+                    ) : t.usd === null ? (
                       <span className="text-muted-foreground">нет USD</span>
                     ) : (
                       <span style={t.isRefund ? { color: 'var(--heat-refund)' } : undefined}>
@@ -189,6 +192,9 @@ function downloadCsv(txns: Txn[]) {
     'category',
     'mcc',
     'mcc_description',
+    'side',
+    'side_label',
+    'direction',
     'city',
     'country',
     'usd',
@@ -207,6 +213,9 @@ function downloadCsv(txns: Txn[]) {
       t.category,
       t.mcc ?? '',
       t.categoryDetail,
+      t.side,
+      t.sideLabel,
+      t.direction,
       t.city,
       t.country,
       t.usd ?? '',
