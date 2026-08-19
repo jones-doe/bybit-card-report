@@ -189,6 +189,9 @@ export async function fetchAllAssetRecords({
             page,
             limit: PAGE_LIMIT,
             status_code: '1',
+            // Undocumented value: the docs list SIDE_QUERY_AUTH /
+            // SIDE_QUERY_FINANCIAL / SIDE_QUERY_REFUND, but _ALL is what the web
+            // app sends and the only one returning purchases and refunds together.
             type: 'SIDE_QUERY_FINANCIAL_ALL',
             ...params,
           },
@@ -224,7 +227,9 @@ export async function fetchAllAssetRecords({
 
     const batch = Array.isArray(result?.data) ? result.data : []
     all.push(...batch)
-    if (typeof result?.totalCount === 'number') total = result.totalCount
+    // Sent as a string on some responses, so coerce rather than typeof-check.
+    const reported = Number(result?.totalCount)
+    if (Number.isFinite(reported) && reported >= 0) total = reported
     onProgress?.({ page, fetched: all.length, total })
 
     const reachedTotal = total !== null && all.length >= total

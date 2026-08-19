@@ -203,6 +203,8 @@ function downloadCsv(txns: Txn[]) {
     'fees',
     'is_refund',
     'status',
+    'status_label',
+    'trade_status_label',
   ]
   const escape = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`
   const rows = txns.map((t) =>
@@ -224,6 +226,8 @@ function downloadCsv(txns: Txn[]) {
       t.fees,
       t.isRefund ? '1' : '0',
       t.status,
+      t.statusLabel,
+      t.tradeStatusLabel,
     ]
       .map(escape)
       .join(','),

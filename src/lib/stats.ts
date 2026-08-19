@@ -1,5 +1,11 @@
 import { mccDescription, mccGroup, normalizeMcc } from './mcc'
-import { sideDirection, sideLabel, type TxnDirection } from './side'
+import {
+  sideDirection,
+  sideLabel,
+  statusLabel,
+  tradeStatusLabel,
+  type TxnDirection,
+} from './side'
 import type { CardAssetRecord, DayStat, MonthStat, Txn } from './types'
 
 /** Fallback only: used when `side` carries a code we do not know. */
@@ -112,7 +118,9 @@ export function normalize(records: CardAssetRecord[]): Txn[] {
       mcc,
       country: String(r.merchCountry || '').trim(),
       city: String(r.merchCity || '').trim(),
-      status: String(r.status || r.tradeStatus || '').trim(),
+      status: String(r.status ?? '').trim(),
+      statusLabel: statusLabel(r.status) ?? '',
+      tradeStatusLabel: tradeStatusLabel(r.tradeStatus) ?? '',
       side: String(r.side || '').trim(),
       sideLabel: sideLabel(r.side) ?? '',
       direction,

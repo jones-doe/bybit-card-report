@@ -1,6 +1,6 @@
 /**
- * The `side` field of a card asset record is a numeric operation code, not a
- * word. Values are documented at
+ * Documented enums of a card asset record — `side`, `tradeStatus`, `status`.
+ * They all arrive as numeric codes rather than words:
  * https://bybit-exchange.github.io/docs/v5/bybit-card/asset-records
  */
 
@@ -61,4 +61,28 @@ export function sideLabel(side: unknown): string | null {
 export function isPlainPurchase(side: unknown): boolean {
   const code = normalize(side)
   return code === '3' || code === '7'
+}
+
+/** `tradeStatus` — documented on the same page as `side`. */
+export const TRADE_STATUS_LABELS: Record<string, string> = {
+  '0': 'В обработке',
+  '1': 'Завершена',
+  '2': 'Отклонена',
+  '3': 'Сторнирована',
+}
+
+/** `status` — documented on the same page as `side`. */
+export const STATUS_LABELS: Record<string, string> = {
+  '-1': 'Создана',
+  '0': 'В ожидании',
+  '1': 'Успешно',
+  '2': 'Ошибка',
+}
+
+export function tradeStatusLabel(value: unknown): string | null {
+  return TRADE_STATUS_LABELS[normalize(value)] ?? null
+}
+
+export function statusLabel(value: unknown): string | null {
+  return STATUS_LABELS[normalize(value)] ?? null
 }

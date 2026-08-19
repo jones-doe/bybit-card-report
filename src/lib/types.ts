@@ -11,14 +11,14 @@ export interface CardAssetRecord {
   transactionAmount?: string
   transactionCurrency?: string
   transactionCurrencyAmount?: string
-  txnCreate?: number
+  txnCreate?: number | string
   merchCountry?: string
   merchCity?: string
   merchName?: string
   txnId?: string
   declinedReason?: string
   totalFees?: string
-  uid?: number
+  uid?: number | string
   fxPad?: string
   interchangeFee?: string
   billAmount?: string
@@ -37,9 +37,9 @@ export interface CardAssetRecord {
 }
 
 export interface CardAssetRecordsResult {
-  pageSize: number
-  pageNo: number
-  totalCount: number
+  pageSize: number | string
+  pageNo: number | string
+  totalCount: number | string
   data: CardAssetRecord[]
 }
 
@@ -70,7 +70,12 @@ export interface Txn {
   mcc: string | null
   country: string
   city: string
+  /** Raw `status` code as sent. */
   status: string
+  /** Decoded `status`, e.g. "Успешно". */
+  statusLabel: string
+  /** Decoded `tradeStatus`, e.g. "Завершена". */
+  tradeStatusLabel: string
   side: string
   /** Human label for the documented `side` code, empty when unknown. */
   sideLabel: string
