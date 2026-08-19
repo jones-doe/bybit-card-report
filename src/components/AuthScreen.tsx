@@ -78,8 +78,9 @@ export function AuthScreen({ onSubmit }: AuthScreenProps) {
               <ShieldAlert />
               <AlertTitle>Ключи хранятся локально</AlertTitle>
               <AlertDescription>
-                Пара сохраняется в localStorage этого браузера в открытом виде и уходит только на
-                api.bybit.com через dev-прокси. Используйте ключ с правами только на чтение.
+                Пара сохраняется в localStorage этого браузера в открытом виде. Запросы уходят
+                напрямую на api.bybit.com — своего сервера у приложения нет, ключи никуда больше
+                не передаются. Используйте ключ с правами только на чтение.
               </AlertDescription>
             </Alert>
 
