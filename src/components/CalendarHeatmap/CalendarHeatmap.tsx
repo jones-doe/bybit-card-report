@@ -47,7 +47,7 @@ export const CalendarHeatmap = ({
     const totals = new Array(12).fill(0) as number[]
     for (const day of days.values()) {
       if (Number(day.dateKey.slice(0, 4)) !== year) continue
-      totals[Number(day.dateKey.slice(5, 7)) - 1] += day.spend
+      totals[Number(day.dateKey.slice(5, 7)) - 1] += day.net
     }
     return totals
   }, [days, year])
