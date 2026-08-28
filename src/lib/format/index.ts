@@ -1,5 +1,4 @@
 export { formatUsd } from './formatUsd'
-export { MONTH_NAMES } from './monthNames'
 export { formatMonthKey } from './formatMonthKey'
 export { formatDateKey } from './formatDateKey'
 export { formatDateTime } from './formatDateTime'

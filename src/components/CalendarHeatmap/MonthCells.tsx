@@ -1,7 +1,7 @@
+import { eachDayOfInterval, endOfMonth, format, getISODay, startOfMonth } from 'date-fns'
 import { formatDateKey, formatUsd, pluralTxn } from '@/lib/format'
 import type { DayStat } from '@/lib/types'
 import type { HoverState } from './HoverState'
-import { pad } from './utils'
 
 type MonthCellsProps = {
   year: number
@@ -22,17 +22,17 @@ export const MonthCells = ({
   onSelectDay,
   onHover,
 }: MonthCellsProps) => {
-  const first = new Date(year, monthIndex, 1)
-  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
-  const offset = (first.getDay() + 6) % 7 // week starts on Monday
+  const monthStart = startOfMonth(new Date(year, monthIndex, 1))
+  const monthDays = eachDayOfInterval({ start: monthStart, end: endOfMonth(monthStart) })
+  const offset = getISODay(monthStart) - 1 // week starts on Monday
 
   const cells = []
   for (let i = 0; i < offset; i++) {
     cells.push(<div key={`pad-${i}`} aria-hidden />)
   }
 
-  for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber++) {
-    const dateKey = `${year}-${pad(monthIndex + 1)}-${pad(dayNumber)}`
+  for (const day of monthDays) {
+    const dateKey = format(day, 'yyyy-MM-dd')
     const stat = days.get(dateKey)
     const step = stat ? level(stat.spend) : 0
     const isSelected = selectedDay === dateKey
@@ -85,7 +85,7 @@ export const MonthCells = ({
           opacity: stat ? 1 : 0.55,
         }}
       >
-        {dayNumber}
+        {day.getDate()}
       </button>,
     )
   }

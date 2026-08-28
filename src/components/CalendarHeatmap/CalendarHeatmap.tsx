@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { MONTH_NAMES, formatDateKey, formatUsd, pluralTxn } from '@/lib/format'
-import { makeHeatScale, WEEKDAYS } from './utils'
+import { format } from 'date-fns'
+import { ru } from 'date-fns/locale'
+import { formatDateKey, formatUsd, pluralTxn } from '@/lib/format'
+import { makeHeatScale, WEEKDAY_LABELS } from './utils'
 import type { DayStat } from '@/lib/types'
 import type { HoverState } from './HoverState'
 import { Legend } from './Legend'
@@ -85,14 +87,16 @@ export const CalendarHeatmap = ({
           <Card key={monthIndex} className="gap-0 py-4">
             <CardContent className="px-4">
               <div className="mb-2 flex items-baseline justify-between gap-2">
-                <span className="text-sm font-medium capitalize">{MONTH_NAMES[monthIndex]}</span>
+                <span className="text-sm font-medium capitalize">
+                  {format(new Date(year, monthIndex, 1), 'LLLL', { locale: ru })}
+                </span>
                 <span className="text-muted-foreground text-xs tabular-nums">
                   {monthTotals[monthIndex] > 0 ? formatUsd(monthTotals[monthIndex]) : '—'}
                 </span>
               </div>
 
               <div className="grid grid-cols-7 gap-1">
-                {WEEKDAYS.map((weekday) => (
+                {WEEKDAY_LABELS.map((weekday) => (
                   <div
                     key={weekday}
                     className="text-muted-foreground pb-1 text-center text-[10px]"
