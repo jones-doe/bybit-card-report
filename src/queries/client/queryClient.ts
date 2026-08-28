@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { isRateLimited } from '@/requests/shared'
+import { QUERY_STALE_TIME_MS } from './queryStaleTimeMs'
 
 /** Rate-limit retries. Anything else fails immediately — a bad key will not heal. */
 const MAX_RATE_LIMIT_RETRIES = 7
@@ -10,11 +11,14 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // The history is a heavy, rate-limited walk: never re-run it just because
-      // a window regained focus. Refreshing is an explicit action.
+      // a window regained focus or the network blipped — refreshing on those
+      // is not what "stale after 12h" means. Mount is the one trigger that
+      // should respect staleness, so a reload past QUERY_STALE_TIME_MS quietly
+      // pulls the latest history instead of serving the cache forever.
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      refetchOnMount: false,
-      staleTime: Infinity,
+      refetchOnMount: true,
+      staleTime: QUERY_STALE_TIME_MS,
       // Never garbage-collect in memory; the persisted copy is what expires,
       // and it does so by maxAge. A finite gcTime is also a trap here: anything
       // above ~24.8 days overflows setTimeout and fires immediately, which
