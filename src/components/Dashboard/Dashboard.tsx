@@ -44,8 +44,7 @@ export const Dashboard = ({ credentials, onLogout }: DashboardProps) => {
   const categoryOrder = useMemo(() => buildCategoryOrder(txns), [txns])
 
   const years = useMemo(() => {
-    const set = new Set<number>()
-    for (const key of days.keys()) set.add(Number(key.slice(0, 4)))
+    const set = new Set([...days.keys()].map((key) => Number(key.slice(0, 4))))
     return [...set].sort((a, b) => b - a)
   }, [days])
 

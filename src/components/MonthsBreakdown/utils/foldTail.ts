@@ -15,19 +15,23 @@ export const foldTail = (
 
   // Merchants of the folded categories are merged, so opening "Прочее" still
   // answers where that money went.
-  const merged = new Map<string, MerchantStat>()
-  for (const category of tail) {
-    for (const m of category.merchants) {
-      const existing = merged.get(m.name)
-      if (existing) {
-        existing.spend += m.spend
-        existing.refunds += m.refunds
-        existing.count += m.count
-      } else {
-        merged.set(m.name, { ...m })
-      }
-    }
-  }
+  const merged = tail
+    .flatMap((category) => category.merchants)
+    .reduce((acc, m) => {
+      const existing = acc.get(m.name)
+      acc.set(
+        m.name,
+        existing
+          ? {
+              ...existing,
+              spend: existing.spend + m.spend,
+              refunds: existing.refunds + m.refunds,
+              count: existing.count + m.count,
+            }
+          : { ...m },
+      )
+      return acc
+    }, new Map<string, MerchantStat>())
 
   const folded: CategoryStat = {
     name: tail.length > 1 ? `${OTHER_CATEGORY} (${tail.length})` : tail[0].name,

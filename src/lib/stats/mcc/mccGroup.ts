@@ -6,8 +6,6 @@ export const mccGroup = (code: string): string | null => {
   if (explicit) return explicit
 
   const numeric = Number(code)
-  for (const [low, high, group] of GROUP_RANGES) {
-    if (numeric >= low && numeric <= high) return group
-  }
-  return null
+  const range = GROUP_RANGES.find(([low, high]) => numeric >= low && numeric <= high)
+  return range?.[2] ?? null
 }

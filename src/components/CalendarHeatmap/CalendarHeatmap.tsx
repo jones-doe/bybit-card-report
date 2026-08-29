@@ -45,14 +45,16 @@ export const CalendarHeatmap = ({
     const lastMonth = year === now.getFullYear() ? now.getMonth() : 11
     return Array.from({ length: lastMonth + 1 }, (_, i) => lastMonth - i)
   }, [year])
-  const monthTotals = useMemo(() => {
-    const totals = new Array(12).fill(0) as number[]
-    for (const day of days.values()) {
-      if (Number(day.dateKey.slice(0, 4)) !== year) continue
-      totals[Number(day.dateKey.slice(5, 7)) - 1] += day.net
-    }
-    return totals
-  }, [days, year])
+  const monthTotals = useMemo(
+    () =>
+      [...days.values()]
+        .filter((day) => Number(day.dateKey.slice(0, 4)) === year)
+        .reduce((totals, day) => {
+          totals[Number(day.dateKey.slice(5, 7)) - 1] += day.net
+          return totals
+        }, new Array(12).fill(0) as number[]),
+    [days, year],
+  )
 
   return (
     <div className="space-y-4">

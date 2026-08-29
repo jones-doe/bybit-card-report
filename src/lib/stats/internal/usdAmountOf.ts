@@ -9,10 +9,9 @@ export const usdAmountOf = (r: CardAssetRecord): number | null => {
     [r.transactionAmount, r.transactionCurrency],
     [r.paidAmount, r.paidCurrency],
   ]
-  for (const [amount, currency] of pairs) {
-    if (String(currency ?? '').toUpperCase() !== 'USD') continue
-    const n = toNumber(amount)
-    if (n !== null) return n
-  }
-  return null
+  const usd = pairs
+    .filter(([, currency]) => String(currency ?? '').toUpperCase() === 'USD')
+    .map(([amount]) => toNumber(amount))
+    .find((n) => n !== null)
+  return usd ?? null
 }

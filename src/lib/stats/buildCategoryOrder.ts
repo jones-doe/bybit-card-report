@@ -2,12 +2,13 @@ import type { Txn } from '@/lib/types'
 import { CATEGORY_SLOTS, NO_CATEGORY } from './constants'
 
 export const buildCategoryOrder = (txns: Txn[]): Map<string, number> => {
-  const totals = new Map<string, number>()
-  for (const t of txns) {
-    if (t.usd === null || t.usd < 0) continue
-    const name = t.category || NO_CATEGORY
-    totals.set(name, (totals.get(name) ?? 0) + t.usd)
-  }
+  const totals = txns
+    .filter((t): t is Txn & { usd: number } => t.usd !== null && t.usd >= 0)
+    .reduce((acc, t) => {
+      const name = t.category || NO_CATEGORY
+      acc.set(name, (acc.get(name) ?? 0) + t.usd)
+      return acc
+    }, new Map<string, number>())
 
   const order = new Map<string, number>()
   ;[...totals.entries()]

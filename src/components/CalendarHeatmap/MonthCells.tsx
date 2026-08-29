@@ -26,18 +26,17 @@ export const MonthCells = ({
   const monthDays = eachDayOfInterval({ start: monthStart, end: endOfMonth(monthStart) })
   const offset = getISODay(monthStart) - 1 // week starts on Monday
 
-  const cells = []
-  for (let i = 0; i < offset; i++) {
-    cells.push(<div key={`pad-${i}`} aria-hidden />)
-  }
+  const paddingCells = Array.from({ length: offset }, (_, i) => (
+    <div key={`pad-${i}`} aria-hidden />
+  ))
 
-  for (const day of monthDays) {
+  const dayCells = monthDays.map((day) => {
     const dateKey = format(day, 'yyyy-MM-dd')
     const stat = days.get(dateKey)
     const step = stat ? level(stat.spend) : 0
     const isSelected = selectedDay === dateKey
 
-    cells.push(
+    return (
       <button
         key={dateKey}
         type="button"
@@ -86,9 +85,14 @@ export const MonthCells = ({
         }}
       >
         {day.getDate()}
-      </button>,
+      </button>
     )
-  }
+  })
 
-  return <>{cells}</>
+  return (
+    <>
+      {paddingCells}
+      {dayCells}
+    </>
+  )
 }

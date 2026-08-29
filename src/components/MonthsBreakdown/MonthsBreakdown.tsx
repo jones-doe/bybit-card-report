@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatMonthKey, formatUsd, pluralTxn } from '@/lib/format'
 import { buildMonthCategories } from '@/lib/stats'
-import type { CategoryStat, MonthStat } from '@/lib/types'
+import type { MonthStat } from '@/lib/types'
 import { MonthPanel } from './MonthPanel'
 import { foldTail } from './utils'
 
@@ -22,11 +22,11 @@ export const MonthsBreakdown = ({
   // be on screen without a click.
   const [expanded, setExpanded] = useState<string | null>(months[0]?.monthKey ?? null)
 
-  const byMonth = useMemo(() => {
-    const map = new Map<string, CategoryStat[]>()
-    for (const month of months) map.set(month.monthKey, buildMonthCategories(month, categoryOrder))
-    return map
-  }, [months, categoryOrder])
+  const byMonth = useMemo(
+    () =>
+      new Map(months.map((month) => [month.monthKey, buildMonthCategories(month, categoryOrder)])),
+    [months, categoryOrder],
+  )
 
   if (months.length === 0) {
     return <p className="text-muted-foreground text-sm">Нет данных за период.</p>

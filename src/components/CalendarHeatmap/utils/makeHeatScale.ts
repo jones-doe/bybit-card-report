@@ -11,11 +11,8 @@ export const makeHeatScale = (values: number[]) => {
 
   const level = (value: number) => {
     if (value <= 0) return 0
-    let step = 1
-    for (const threshold of thresholds) {
-      if (value > threshold) step += 1
-    }
-    return Math.min(step, 5)
+    const exceeded = thresholds.filter((threshold) => value > threshold).length
+    return Math.min(exceeded + 1, 5)
   }
 
   return { level, thresholds }
