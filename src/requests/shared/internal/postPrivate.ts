@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { API_BASE } from '../constants/apiBase'
 import { RECV_WINDOW } from '../constants/recvWindow'
 import { BybitApiError } from '../errors/BybitApiError'
@@ -23,8 +24,7 @@ export const postPrivate = async <T>(
     timestamp + credentials.apiKey + RECV_WINDOW + rawBody,
   )
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    method: 'POST',
+  const response = await axios.post<BybitEnvelope<T>>(`${API_BASE}${path}`, rawBody, {
     signal,
     headers: {
       'Content-Type': 'application/json',
@@ -33,13 +33,17 @@ export const postPrivate = async <T>(
       'X-BAPI-RECV-WINDOW': RECV_WINDOW,
       'X-BAPI-SIGN': signature,
     },
-    body: rawBody,
+    // Bybit's retCode envelope is the real error signal — resolve on every
+    // HTTP status so it reaches the same handling below, instead of axios
+    // throwing before we get a chance to read the body.
+    validateStatus: () => true,
   })
 
-  const resetAt = resetTimestampOf(response)
+  const resetAt = resetTimestampOf(response.headers['x-bapi-limit-reset-timestamp'])
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => '')
+  if (response.status < 200 || response.status >= 300) {
+    const text =
+      typeof response.data === 'string' ? response.data : JSON.stringify(response.data)
     throw new BybitApiError(
       `HTTP ${response.status} ${response.statusText}${text ? ` — ${text.slice(0, 300)}` : ''}`,
       response.status,
@@ -48,7 +52,7 @@ export const postPrivate = async <T>(
     )
   }
 
-  const envelope = (await response.json()) as BybitEnvelope<T>
+  const envelope = response.data
   if (envelope.retCode !== 0) {
     throw new BybitApiError(
       `Bybit вернул ошибку ${envelope.retCode}: ${envelope.retMsg}`,
