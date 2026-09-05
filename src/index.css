@@ -129,30 +129,37 @@
     }
 }
 /* ── Data-viz tokens ─────────────────────────────────────────────────────────
-   Sequential single-hue ramp (blue, light→dark) for the daily-spend heatmap.
-   Steps are taken from a validated palette; dark mode is stepped for the dark
-   surface (ascending lightness), not flipped automatically. */
+   GitHub's own contribution-graph scale (5 levels + empty), light and dark —
+   https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/managing-contribution-settings-on-your-profile.
+   Ink is per-step rather than one shared brightness threshold: GitHub's dark
+   steps don't split light/dark text at the same step index its light ones do
+   (level 3 already needs dark ink in dark mode), so each step picks whichever
+   ink clears 4.5:1 against its own fill — verified, not eyeballed. */
 :root {
-  --heat-empty: #ededed;
-  --heat-1: #cde2fb;
-  --heat-2: #9ec5f4;
-  --heat-3: #5598e7;
-  --heat-4: #2a78d6;
-  --heat-5: #184f95;
-  --heat-ink-lo: #0b0b0b;
-  --heat-ink-hi: #ffffff;
+  --heat-empty: #ebedf0;
+  --heat-1: #9be9a8;
+  --heat-2: #40c463;
+  --heat-3: #30a14e;
+  --heat-4: #216e39;
+  --heat-ink-empty: #0b0b0b;
+  --heat-ink-1: #0b0b0b;
+  --heat-ink-2: #0b0b0b;
+  --heat-ink-3: #0b0b0b;
+  --heat-ink-4: #ffffff;
   --heat-refund: #1baf7a;
 }
 
 .dark {
-  --heat-empty: #2c2c2c;
-  --heat-1: #104281;
-  --heat-2: #184f95;
-  --heat-3: #256abf;
-  --heat-4: #3987e5;
-  --heat-5: #86b6ef;
-  --heat-ink-lo: #c3c2b7;
-  --heat-ink-hi: #0b1a2e;
+  --heat-empty: #161b22;
+  --heat-1: #0e4429;
+  --heat-2: #006d32;
+  --heat-3: #26a641;
+  --heat-4: #39d353;
+  --heat-ink-empty: #e5e4da;
+  --heat-ink-1: #e5e4da;
+  --heat-ink-2: #e5e4da;
+  --heat-ink-3: #0b1a2e;
+  --heat-ink-4: #0b1a2e;
   --heat-refund: #199e70;
 }
 

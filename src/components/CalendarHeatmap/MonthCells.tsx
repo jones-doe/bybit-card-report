@@ -80,7 +80,7 @@ export const MonthCells = ({
         ].join(' ')}
         style={{
           backgroundColor: `var(--heat-${step || 'empty'})`,
-          color: step >= 4 ? 'var(--heat-ink-hi)' : 'var(--heat-ink-lo)',
+          color: `var(--heat-ink-${step || 'empty'})`,
           opacity: stat ? 1 : 0.55,
         }}
       >
