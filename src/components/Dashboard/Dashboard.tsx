@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useStore } from '@nanostores/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, LogOut, Moon, RefreshCw, Sun } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -11,7 +12,7 @@ import { DayDetails } from '../DayDetails'
 import { MonthsBreakdown } from '../MonthsBreakdown'
 import { StatTiles } from '../StatTiles'
 import { TransactionsTable } from '../TransactionsTable'
-import { maskKey } from './utils'
+import { maskKey, themeStore } from './utils'
 import { formatDateTime } from '@/lib/format'
 import { buildCategoryOrder, buildDays, buildMonths, buildTotals, normalize } from '@/lib/stats'
 import { assetRecordsQueryKey, useAssetRecordsQuery } from '@/queries/useAssetRecordsQuery'
@@ -27,7 +28,7 @@ export const Dashboard = ({ credentials, onLogout }: DashboardProps) => {
   const { records, total, pagesFetched, isLoading, isFetching, failureCount, error, fetchedAt, refetch } =
     useAssetRecordsQuery(credentials)
 
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
+  const dark = useStore(themeStore)
   const [tab, setTab] = useState('calendar')
   const [year, setYear] = useState<number>(new Date().getFullYear())
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
@@ -72,7 +73,7 @@ export const Dashboard = ({ credentials, onLogout }: DashboardProps) => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setDark((v) => !v)}
+            onClick={() => themeStore.set(!dark)}
             aria-label="Переключить тему"
           >
             {dark ? <Sun /> : <Moon />}
