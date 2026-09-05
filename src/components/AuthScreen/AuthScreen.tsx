@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { KeyRound, ShieldAlert } from 'lucide-react'
+import { FlaskConical, KeyRound, ShieldAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import type { Credentials } from '@/requests/shared'
+import { installDemoData } from './utils'
 
 type AuthScreenProps = {
   onSubmit: (credentials: Credentials) => void
@@ -15,6 +16,19 @@ export const AuthScreen = ({ onSubmit }: AuthScreenProps) => {
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isDemoLoading, setIsDemoLoading] = useState(false)
+
+  const handleDemoMode = async () => {
+    setIsDemoLoading(true)
+    setError(null)
+    try {
+      await installDemoData()
+    } catch {
+      setError('Не удалось загрузить демо-данные — dev/fixtures/assetRecords.json недоступен.')
+    } finally {
+      setIsDemoLoading(false)
+    }
+  }
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -87,6 +101,19 @@ export const AuthScreen = ({ onSubmit }: AuthScreenProps) => {
             <Button type="submit" className="w-full">
               Загрузить историю
             </Button>
+
+            {import.meta.env.DEV && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={isDemoLoading}
+                onClick={handleDemoMode}
+              >
+                <FlaskConical className={isDemoLoading ? 'animate-pulse' : ''} />
+                Демо-режим (dev)
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>

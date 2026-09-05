@@ -25,7 +25,16 @@ actually imports.
 
 ## Loading it
 
-In the browser tab (javascript_tool or the real console):
+The login screen has a "Демо-режим (dev)" button (`npm run dev` only — gated behind
+`import.meta.env.DEV`, stripped from production builds) that does this in one click,
+with no reload: it seeds the live query cache via `queryClient.setQueryData` and logs
+in, so `credentialsStore`'s own reactivity flips the screen straight to the Dashboard.
+See `src/components/AuthScreen/utils/installDemoData.ts`. "Сменить ключ" exits it the
+same way it exits a real session.
+
+For scripted scenarios the button can't do — ageing the cache to test `staleTime`,
+inspecting the persisted envelope, clearing without visiting the login screen — drop to
+the browser tab directly (javascript_tool or the real console):
 
 ```js
 const { installFixtures } = await import('/dev/fixtures/install.ts')

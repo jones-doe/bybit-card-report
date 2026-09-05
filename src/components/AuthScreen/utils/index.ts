@@ -1,0 +1,1 @@
+export { installDemoData } from './installDemoData'
